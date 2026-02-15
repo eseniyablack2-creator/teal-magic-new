@@ -78,11 +78,11 @@ export default function PlatformPreview({ tokens }: PlatformPreviewProps) {
         {pages.map(page => (
           <TabsContent key={page.id} value={page.id} className="flex-1">
             <iframe
-              ref={iframeRef}
-              src={page.path}
-              className="w-full h-full border-0 rounded-md"
-              title={page.label}
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"
+          ref={iframeRef}
+          src={page.path}
+          className="w-full min-h-[calc(100vh-250px)] border-0 rounded-md"
+          title={page.label}
+          sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"
             />
           </TabsContent>
         ))}
