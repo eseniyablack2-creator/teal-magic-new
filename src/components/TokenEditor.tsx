@@ -47,32 +47,73 @@ function TokenRow({ token, onChange }: { token: FlatToken; onChange: (path: stri
   const isRgba = token.value.startsWith('rgba');
   const hex = rgbStringToHex(token.value);
 
+  // Извлекаем текущую альфу для rgba-цветов
+  const getCurrentAlpha = (): number => {
+    if (isRgba) {
+      const match = token.value.match(/,\s*([\d.]+)\)$/);
+      return match ? parseFloat(match[1]) : 1;
+    }
+    return 1;
+  };
+
+  const [alpha, setAlpha] = useState<number>(getCurrentAlpha());
+
   const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newHex = e.target.value;
     const r = parseInt(newHex.slice(1, 3), 16);
     const g = parseInt(newHex.slice(3, 5), 16);
     const b = parseInt(newHex.slice(5, 7), 16);
+
     if (isRgba) {
-      const alphaMatch = token.value.match(/,\s*([\d.]+)\)$/);
-      const alpha = alphaMatch ? alphaMatch[1] : '1';
+      // сохраняем текущую альфу
       onChange(token.path, `rgba(${r}, ${g}, ${b}, ${alpha})`);
     } else {
       onChange(token.path, `rgb(${r}, ${g}, ${b})`);
     }
   };
 
+  const handleAlphaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newAlpha = parseFloat(e.target.value);
+    setAlpha(newAlpha);
+
+    // обновляем значение с новой альфой, сохраняя RGB из hex
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    onChange(token.path, `rgba(${r}, ${g}, ${b}, ${newAlpha})`);
+  };
+
   const label = token.path.split('.').slice(2).join('.') || token.path.split('.').pop() || '';
 
   return (
-    <div className="flex items-center gap-2">
-      <input
-        type="color"
-        value={hex}
-        onChange={handleColorChange}
-        className="h-6 w-6 shrink-0 cursor-pointer rounded border-0 p-0"
-      />
-      <span className="min-w-0 flex-1 truncate text-xs">{label}</span>
-      <span className="shrink-0 font-mono text-[10px] text-muted-foreground">{token.value}</span>
+    <div className="flex flex-col gap-1 py-1">
+      <div className="flex items-center gap-2">
+        <input
+          type="color"
+          value={hex}
+          onChange={handleColorChange}
+          className="h-6 w-6 shrink-0 cursor-pointer rounded border-0 p-0"
+        />
+        <span className="min-w-0 flex-1 truncate text-xs">{label}</span>
+        <span className="shrink-0 font-mono text-[10px] text-muted-foreground">{token.value}</span>
+      </div>
+      {isRgba && (
+        <div className="flex items-center gap-2 pl-8">
+          <span className="text-xs text-muted-foreground">Прозрачность:</span>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={alpha}
+            onChange={handleAlphaChange}
+            className="w-24 h-2"
+          />
+          <span className="text-xs font-mono text-muted-foreground w-12">
+            {Math.round(alpha * 100)}%
+          </span>
+        </div>
+      )}
     </div>
   );
 }
