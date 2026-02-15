@@ -1,0 +1,191 @@
+@import 'app/common/styles/background-colors.module.scss';
+@import 'app/common/styles/_breakpoints.module.scss';
+
+.customBanner {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  position: relative;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  @include md-breakpoint {
+    flex-direction: row;
+    justify-content: space-between;
+    height: 18.25rem;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    padding: 1rem;
+
+    @include lg-breakpoint {
+      padding: 2.5rem;
+    }
+
+    .text {
+      &MarginTop {
+        margin-block-start: 0.75rem;
+      }
+    }
+
+    @include md-breakpoint {
+      .text {
+        &MarginTop {
+          margin-block-start: 1rem;
+        }
+      }
+    }
+  }
+
+  &.overlay {
+    &::before {
+      position: absolute;
+      content: '';
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 1rem;
+      background: linear-gradient(
+        98.28deg,
+        rgba(0, 0, 0, 0.6) 2.74%,
+        rgba(0, 0, 0, 0.336) 54.07%,
+        rgba(0, 0, 0, 0) 73.79%
+      );
+    }
+  }
+
+  .mainImage {
+    &Wrapper {
+      flex-shrink: 0;
+      padding-block-end: 1rem;
+
+      @include md-breakpoint {
+        padding-block-end: 0;
+      }
+    }
+
+    object-fit: contain;
+    border-bottom-right-radius: 1rem;
+    border-bottom-left-radius: 1rem;
+    max-height: 11.75rem;
+
+    @include md-breakpoint {
+      object-fit: cover;
+      max-height: unset;
+      max-width: 25rem;
+      border-bottom-right-radius: 1rem;
+      border-top-right-radius: 1rem;
+      border-bottom-left-radius: 0;
+    }
+  }
+}
+
+.defaultBanner {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
+
+  @include md-breakpoint {
+    flex-direction: row;
+  }
+
+  .textBlock {
+    display: block;
+    width: 100%;
+    padding: 1rem;
+
+    @include md-breakpoint {
+      width: 46.875rem;
+      padding-inline: 2.5rem 1rem;
+      padding-block: 1rem;
+    }
+
+    .subtitle {
+      padding: 0.25rem 0;
+    }
+
+    @include lg-breakpoint {
+      .title {
+        font-size: 2.5rem;
+        line-height: 3rem;
+        font-weight: 900;
+      }
+
+      .subtitle {
+        padding: 1rem 0;
+      }
+    }
+  }
+
+  .iconWrapper {
+    position: relative;
+    justify-self: flex-end;
+    display: flex;
+    flex-shrink: 0;
+
+    & > svg {
+      fill: $bg-accent;
+    }
+
+    .icon {
+      min-height: auto;
+
+      @include lg-breakpoint {
+        min-height: 15rem;
+      }
+
+      @include xl-breakpoint {
+        min-height: 16.1875rem;
+      }
+    }
+
+    .currencyIconWrapper {
+      position: absolute;
+      inset-block-start: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
+.imageBanner {
+  display: flex;
+  box-shadow: $bg-island-shadow;
+  object-fit: contain;
+  border-radius: 1rem;
+  max-height: 28rem;
+
+  &.notMobileImage {
+    max-height: 20rem;
+  }
+}
+
+[dir='rtl'] .customBanner {
+  .mainImage {
+    border-bottom-left-radius: 1rem;
+    border-top-left-radius: 1rem;
+
+    @include md-breakpoint {
+      border-bottom-right-radius: 0;
+      border-top-right-radius: 0;
+    }
+  }
+
+  &.overlay {
+    &::before {
+      transform: scaleX(-1);
+    }
+  }
+}
+
+.link {
+  cursor: pointer;
+}

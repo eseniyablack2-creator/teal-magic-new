@@ -1,0 +1,336 @@
+@import 'normalize-css/normalize.css';
+
+*,
+::before,
+::after {
+  box-sizing: border-box;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+}
+
+ul,
+ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+
+  &:focus {
+    outline: none;
+    text-shadow: 0 0 0.125rem rgba(84, 84, 84, 0.4);
+  }
+}
+
+html,
+body,
+.baseRoot,
+.basePortal {
+  height: 100%;
+}
+
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+
+input {
+  &[type='number'] {
+    -moz-appearance: textfield;
+    -webkit-appearance: textfield;
+    appearance: textfield;
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      display: none;
+    }
+  }
+
+  &[type='password'] {
+    &::-ms-clear,
+    &::-ms-reveal {
+      display: none !important;
+    }
+  }
+}
+
+input,
+input:before,
+input:after {
+  -webkit-user-select: initial;
+  -khtml-user-select: initial;
+  -moz-user-select: initial;
+  -ms-user-select: initial;
+  user-select: initial;
+}
+
+input,
+textarea {
+  touch-action: pan-x pan-y;
+}
+
+*:focus-visible {
+  outline: none;
+}
+
+@function str-replace($string, $search, $replace: '') {
+  $index: str-index($string, $search);
+  @if $index {
+    @return str-slice($string, 1, $index - 1) + $replace +
+      str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
+  }
+  @return $string;
+}
+
+@function rgbValue($color) {
+  $color: str-replace($color, 'rgb(');
+  $color: str-replace($color, ')');
+  @return $color;
+}
+
+@mixin cssVariable($name, $value) {
+  #{$name}: #{$value};
+  #{$name}-rgb: rgbValue(#{$value});
+}
+
+:root {
+  //status-colors
+  @include cssVariable(--status-danger, 'rgb(224, 89, 89)');
+  @include cssVariable(--status-success, 'rgb(72, 201, 132)');
+  @include cssVariable(--status-warning, 'rgb(249, 166, 71)');
+
+  //background-colors
+  --background-globe: rgb(252, 253, 253);
+  @include cssVariable(--background-island, 'rgb(255, 255, 255)');
+  --background-island-inner: rgb(235, 248, 243);
+  --background-island-shadow: 0 0.5rem 1.25rem #00000012;
+  @include cssVariable(--background-accent, 'rgb(0, 155, 101)');
+  --background-border: rgb(209, 209, 204);
+  --background-modal: rgba(20, 20, 15, 0.7);
+
+  //text-colors
+  --text-primary: rgb(20, 20, 15);
+  --text-primary-inverse: rgb(255, 255, 255);
+  --text-secondary: rgb(92, 92, 86);
+  --text-secondary-inverse: rgb(230, 230, 230);
+  --text-teritary: rgb(184, 184, 184);
+  --text-teritary-inverse: rgb(201, 201, 201);
+  --text-link: rgb(0, 155, 101);
+
+  //icon-colors
+  --icons-primary: rgb(0, 155, 101);
+  --icons-primary-inverse: rgb(255, 255, 255);
+
+  //buttons primary
+  --buttons-primary-fill-border-default: rgb(0, 155, 101);
+  --buttons-primary-fill-border-hover: rgb(0, 165, 114);
+  --buttons-primary-fill-border-active: rgb(0, 122, 80);
+  --buttons-primary-fill-border-disabled: rgba(0, 155, 101, 0.35);
+  --buttons-primary-text: rgb(255, 255, 255);
+
+  //buttons inverse
+  --buttons-inverse-fill: rgb(255, 255, 255);
+  --buttons-inverse-text-default: rgb(0, 155, 101);
+  --buttons-inverse-text-hover: rgb(0, 165, 114);
+  --buttons-inverse-text-active: rgb(0, 122, 80);
+  --buttons-inverse-text-disabled: rgba(0, 155, 101, 0.35);
+
+  //buttons outline
+  --buttons-outline-fill: rgb(255, 255, 255);
+  --buttons-outline-border-text-default: rgb(0, 155, 101);
+  --buttons-outline-border-text-hover: rgb(0, 165, 114);
+  --buttons-outline-border-text-active: rgb(0, 122, 80);
+  --buttons-outline-border-text-disabled: rgba(0, 155, 101, 0.35);
+
+  //typograpy
+  --f-family: 'Inter', sans-serif;
+
+  --t-size-sm: 0.875rem;
+  --t-size-md: 1rem;
+
+  --t-weight-normal: 400;
+  --t-weight-medium-bold: 500;
+  --t-weight-semi-bold: 600;
+  --t-weight-bold: bold;
+  --t-weight-extra-bold: 800;
+  --t-ls: 0.1px;
+
+  --scrollbar-width: calc(100vw - 100%);
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--background-accent) rgba(0, 0, 0, 0.025) !important;
+
+  --root-width: calc(100vw - 0.75rem - (1.5rem - var(--scrollbar-width)));
+}
+
+html {
+  height: 100%;
+  font-size: 100%;
+}
+
+body {
+  font-family: var(--f-family);
+  font-weight: 400;
+  font-size: 1rem;
+  color: var(--text-primary);
+  line-height: 1.5rem;
+  letter-spacing: var(--t-ls);
+  min-height: 100vh;
+}
+
+#appRoot {
+  width: 100%;
+  min-width: 22.5rem;
+  min-height: 100vh;
+  position: relative;
+}
+
+@media screen and (max-width: 1200px) {
+  html:has(.mainLayoutOld) {
+    font-size: 1.33vw !important;
+  }
+}
+
+::-moz-selection {
+  background-color: var(--background-accent);
+  color: #ffffff;
+}
+
+::selection {
+  background-color: var(--background-accent);
+  color: #ffffff;
+}
+
+::-webkit-scrollbar {
+  width: 0.45rem !important;
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 0.25rem !important;
+  background-color: rgba(0, 0, 0, 0.025);
+}
+
+::-webkit-scrollbar-thumb {
+  border: 0.125rem solid transparent !important;
+  background-clip: content-box !important;
+  background-color: var(--background-accent) !important;
+  border-radius: 0.5rem !important;
+}
+
+text,
+tspan {
+  font-family: var(--f-family) !important;
+  letter-spacing: var(--t-ls) !important;
+}
+
+// For text editor
+
+.ql-align-right {
+  text-align: end;
+}
+
+.ql-align-center {
+  text-align: center;
+}
+
+.ql-align-justify {
+  text-align: justify;
+}
+
+@for $indent from 1 through 9 {
+  .ql-indent-#{$indent} {
+    padding-inline-start: calc($indent * 3rem);
+  }
+}
+
+.htmlString {
+  ul,
+  ol {
+    max-width: 100%;
+    padding-inline-start: 1rem;
+
+    li {
+      max-width: 100%;
+      padding-inline-start: 1.5rem;
+      counter-reset: list-1 list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;
+      counter-increment: list-0;
+
+      &::before {
+        text-align: end;
+        display: inline-block;
+        white-space: nowrap;
+        width: 1.2rem;
+        margin-inline: -1.5rem 0.3rem;
+      }
+
+      @for $indent from 1 through 9 {
+        &.ql-indent-#{$indent} {
+          padding-inline-start: calc($indent * 3.5rem);
+        }
+      }
+    }
+
+    ol,
+    ul {
+      padding-inline-start: 3.5rem;
+    }
+  }
+
+  ul {
+    li {
+      &::before {
+        content: '\2022';
+      }
+    }
+  }
+
+  ol {
+    li {
+      &::before {
+        content: counter(list-0, decimal) '. ';
+      }
+
+      @for $indent from 1 through 9 {
+        $resetList: null;
+
+        @if $indent < 9 {
+          @for $count from $indent + 1 through 9 {
+            $resetList: $resetList list-#{$count};
+          }
+        } @else {
+          $resetList: list-10;
+        }
+
+        &.ql-indent-#{$indent} {
+          counter-increment: list-#{$indent};
+          counter-reset: $resetList;
+          @if $indent == 1 or $indent == 4 or $indent == 7 {
+            &::before {
+              content: counter(list-#{$indent}, lower-alpha) '. ';
+            }
+          }
+          @if $indent == 2 or $indent == 5 or $indent == 8 {
+            &::before {
+              content: counter(list-#{$indent}, lower-roman) '. ';
+            }
+          }
+        }
+      }
+    }
+  }
+
+  a {
+    text-decoration: underline;
+  }
+}

@@ -1,0 +1,33 @@
+/* Breakpoints */
+$screen-sm: 576px; /* Mobile-landscape */
+$screen-md: 768px; /* Tablet-portrait */
+$screen-lg: 992px; /* Tablets and small desktops */
+$screen-xl: 1200px; /* Large tablets and desktops */
+
+/* Small devices */
+@mixin sm-breakpoint {
+  @media (min-width: $screen-sm) {
+    @content;
+  }
+}
+
+/* Medium devices */
+@mixin md-breakpoint {
+  @media (min-width: $screen-md) {
+    @content;
+  }
+}
+
+/* Large devices */
+@mixin lg-breakpoint {
+  @media (min-width: $screen-lg) {
+    @content;
+  }
+}
+
+/* Extra large devices */
+@mixin xl-breakpoint {
+  @media (min-width: $screen-xl) {
+    @content;
+  }
+}

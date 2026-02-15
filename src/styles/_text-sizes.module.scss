@@ -1,0 +1,73 @@
+$t-size-sm: var(--t-size-sm);
+$t-size-md: var(--t-size-md);
+$t-size-xs: 0.75rem;
+$t-size-l: 1.25rem;
+$t-ls: var(--t-ls);
+
+$t-weight-normal: var(--t-weight-normal);
+$t-weight-medium-bold: var(--t-weight-medium-bold);
+$t-weight-semi-bold: var(--t-weight-semi-bold);
+$t-weight-bold: var(--t-weight-bold);
+$t-weight-extra-bold: var(--t-weight-extra-bold);
+
+@mixin body-xs {
+  font-size: $t-size-xs;
+  line-height: 1rem;
+}
+@mixin body-m {
+  font-size: $t-size-md;
+  line-height: 1.5rem;
+}
+@mixin body-s {
+  font-size: $t-size-sm;
+  line-height: 1.25rem;
+}
+@mixin body-l {
+  font-size: $t-size-l;
+  line-height: 1.75rem;
+}
+@mixin h0 {
+  font-size: 1.875rem;
+  line-height: 2rem;
+  font-weight: $t-weight-extra-bold;
+}
+@mixin h1 {
+  font-size: 1.75rem;
+  line-height: 2.25rem;
+  font-weight: $t-weight-bold;
+}
+@mixin h2 {
+  font-size: 1.375rem;
+  line-height: 1.75rem;
+  font-weight: $t-weight-bold;
+}
+@mixin h3 {
+  font-size: $t-size-l;
+  line-height: 1.75rem;
+  font-weight: $t-weight-bold;
+}
+@mixin h4 {
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+  font-weight: $t-weight-bold;
+}
+@mixin h5 {
+  font-size: $t-size-md;
+  line-height: 1.5rem;
+  font-weight: $t-weight-bold;
+}
+@mixin h6 {
+  font-size: $t-size-sm;
+  line-height: 1.25rem;
+  font-weight: $t-weight-bold;
+}
+@mixin subtitle1 {
+  font-size: $t-size-md;
+  line-height: 1.5rem;
+  font-weight: $t-weight-semi-bold;
+}
+@mixin subtitle2 {
+  font-size: $t-size-sm;
+  line-height: 1.25rem;
+  font-weight: $t-weight-semi-bold;
+}
