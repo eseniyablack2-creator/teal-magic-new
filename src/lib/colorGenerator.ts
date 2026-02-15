@@ -1,9 +1,6 @@
 // ============================================
-//   ГЕНЕРАТОР ЦВЕТОВЫХ ТОКЕНОВ — ВЕРСИЯ 27.0
-//   ✅ Поддержка двух primary‑цветов
-//   ✅ Улучшенные алгоритмы monochromatic / saturation
-//   ✅ Адаптация статусных цветов под алгоритмы
-//   ✅ Полная обратная совместимость
+//   ГЕНЕРАТОР ЦВЕТОВЫХ ТОКЕНОВ — ВЕРСИЯ 27.2
+//   ✅ Добавлены RGB-переменные для accent (с правильными именами)
 // ============================================
 
 import chroma from 'chroma-js';
@@ -20,6 +17,8 @@ export interface StatusColors {
 export interface ColorTokens {
   background: Record<string, { value: string | object; type: string }> & {
     'accent-secondary'?: { value: string; type: string };
+    'accent-rgb'?: { value: string; type: string };
+    'accent-secondary-rgb'?: { value: string; type: string };
   };
   text: Record<string, { value: string; type: string }>;
   icons: Record<string, { value: string; type: string }> & {
@@ -206,15 +205,15 @@ function getButtonColorsFromBase(baseColor: chroma.Chroma) {
 // ---------- 8. MONOCHROMATIC — УЛУЧШЕННАЯ ПАЛИТРА ----------
 function generateMonoPalette(primary: chroma.Chroma) {
   const h = primary.get('hsl.h');
-  const sBase = 0.12; // базовая насыщенность 12%
+  const sBase = 0.12;
 
   return {
-    globe: chroma.hsl(h, sBase * 0.8, 0.98),        // s ~10%, очень светло
-    islandInner: chroma.hsl(h, sBase, 0.94),        // s 12%, l 94%
-    surfaceTinted: chroma.hsl(h, sBase * 1.2, 0.90), // s ~14%, l 90%
-    borderSubtle: chroma.hsl(h, sBase * 1.5, 0.85),  // s 18%, l 85%
-    borderDefault: chroma.hsl(h, sBase * 1.8, 0.75), // s ~22%, l 75%
-    borderStrong: chroma.hsl(h, sBase * 2.2, 0.60),  // s ~26%, l 60%
+    globe: chroma.hsl(h, sBase * 0.8, 0.98),
+    islandInner: chroma.hsl(h, sBase, 0.94),
+    surfaceTinted: chroma.hsl(h, sBase * 1.2, 0.90),
+    borderSubtle: chroma.hsl(h, sBase * 1.5, 0.85),
+    borderDefault: chroma.hsl(h, sBase * 1.8, 0.75),
+    borderStrong: chroma.hsl(h, sBase * 2.2, 0.60),
     shadeLight: chroma.hsl(h, sBase * 2.5, 0.40),
     shadeMedium: chroma.hsl(h, sBase * 2.8, 0.30),
     shadeDark: chroma.hsl(h, sBase * 3.0, 0.20),
@@ -225,15 +224,15 @@ function generateMonoPalette(primary: chroma.Chroma) {
 // ---------- 9. SATURATION SCALE — УЛУЧШЕННАЯ ПАЛИТРА ----------
 function generateSaturationPalette(primary: chroma.Chroma) {
   const h = primary.get('hsl.h');
-  const lBg = 0.95; // фон остаётся светлым
+  const lBg = 0.95;
 
   return {
     globe: chroma.hsl(h, 0.02, lBg),
     islandInner: chroma.hsl(h, 0.06, lBg),
     surfaceTinted: chroma.hsl(h, 0.12, lBg),
-    borderSubtle: chroma.hsl(h, 0.20, 0.88),      // яркость чуть ниже для контраста
-    borderDefault: chroma.hsl(h, 0.30, 0.82),     // контраст ~2.8
-    borderStrong: chroma.hsl(h, 0.45, 0.74),      // контраст ~4.0
+    borderSubtle: chroma.hsl(h, 0.20, 0.88),
+    borderDefault: chroma.hsl(h, 0.30, 0.82),
+    borderStrong: chroma.hsl(h, 0.45, 0.74),
     saturatedLight: chroma.hsl(h, 0.60, 0.50),
     saturatedMedium: chroma.hsl(h, 0.80, 0.40),
     hue: h,
@@ -250,15 +249,12 @@ function adaptStatusColors(
 
   if (algorithm !== 'default') {
     (['warning', 'danger', 'success'] as const).forEach((key) => {
-      // Адаптируем только если цвет не был изменён пользователем (совпадает с дефолтным)
       if (status[key] === DEFAULT_STATUS[key]) {
         const color = chroma(status[key]);
         const [h, s, l] = color.hsl();
         if (algorithm === 'monochromatic') {
-          // Уменьшаем насыщенность вдвое
           adapted[key] = chroma.hsl(h, s * 0.5, l).hex();
         } else if (algorithm === 'saturation') {
-          // Умножаем насыщенность на 0.6
           adapted[key] = chroma.hsl(h, s * 0.6, l).hex();
         }
       }
@@ -273,13 +269,12 @@ export function generateTokens(
   status: StatusColors = DEFAULT_STATUS,
   algorithm: AlgorithmType = 'default',
   textPrimaryHex: string = '#14140F',
-  secondaryHex?: string // 👈 новый параметр
+  secondaryHex?: string
 ): ColorTokens {
   const primary = chroma(primaryHex);
   const secondary = secondaryHex ? chroma(secondaryHex) : undefined;
   const textPrimary = chroma(textPrimaryHex);
 
-  // Адаптируем статусные цвета в зависимости от алгоритма
   const adaptedStatus = adaptStatusColors(status, algorithm, primary);
 
   let background: any;
@@ -326,6 +321,10 @@ export function generateTokens(
       'island-shadow': { value: CONSTANTS.ISLAND_SHADOW, type: 'boxShadow' },
     };
 
+    // 👇 ПРАВИЛЬНО: добавляем RGB-переменную с дефисом
+    const [r, g, b] = primary.rgb();
+    background['accent-rgb'] = { value: `${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}`, type: 'color' };
+
     textDerivatives = {
       secondary: secondaryColor,
       tertiary: getTextTertiary(textPrimary),
@@ -353,6 +352,10 @@ export function generateTokens(
       'border-subtle': { value: rgb(mono.borderSubtle), type: 'color' },
       'border-strong': { value: rgb(mono.borderStrong), type: 'color' },
     };
+
+    // 👇 ПРАВИЛЬНО
+    const [r, g, b] = primary.rgb();
+    background['accent-rgb'] = { value: `${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}`, type: 'color' };
 
     textDerivatives = {
       secondary: getTextSecondary(textPrimary, mono.hue, 0.10),
@@ -383,6 +386,10 @@ export function generateTokens(
       'border-strong': { value: rgb(sat.borderStrong), type: 'color' },
     };
 
+    // 👇 ПРАВИЛЬНО
+    const [r, g, b] = primary.rgb();
+    background['accent-rgb'] = { value: `${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}`, type: 'color' };
+
     textDerivatives = {
       secondary: getTextSecondary(textPrimary, sat.hue, 0.10),
       tertiary: getTextTertiary(textPrimary, sat.hue, 0.08),
@@ -396,7 +403,7 @@ export function generateTokens(
     btnActive = satBtn.active;
   }
 
-  // ----- ТЕКСТ (СЕМАНТИЧЕСКИЙ) -----
+  // ----- ТЕКСТ -----
   const secondaryInverse = getSecondaryInverse(textPrimary);
   const tertiaryInverse = getTertiaryInverse(textPrimary);
 
@@ -454,9 +461,13 @@ export function generateTokens(
       'fill-border-disabled': { value: rgba(secondaryBtn.default, 0.35), type: 'color' },
       text: { value: rgb(chroma(CONSTANTS.BUTTON_TEXT)), type: 'color' },
     };
+
+    // 👇 ПРАВИЛЬНО для secondary
+    const [r2, g2, b2] = secondary.rgb();
+    background['accent-secondary-rgb'] = { value: `${Math.round(r2)}, ${Math.round(g2)}, ${Math.round(b2)}`, type: 'color' };
   }
 
-  // ----- СТАТУСЫ (адаптированные) -----
+  // ----- СТАТУСЫ -----
   const statusTokens = {
     warning: { value: rgb(chroma(adaptedStatus.warning)), type: 'color' },
     danger: { value: rgb(chroma(adaptedStatus.danger)), type: 'color' },
