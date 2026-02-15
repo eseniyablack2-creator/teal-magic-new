@@ -1,159 +1,92 @@
+import { useState, useEffect, useRef } from 'react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ColorTokens } from '@/lib/colorGenerator';
-
-// Вспомогательная функция — достаёт строку цвета из токена
-function getColor(val: { value: string | object }): string {
-  return typeof val.value === 'string' ? val.value : 'transparent';
-}
 
 interface PlatformPreviewProps {
   tokens: ColorTokens;
 }
 
+// Преобразует путь вида "background.globe" в CSS-переменную "--background-globe"
+const pathToCssVar = (path: string): string => {
+  return '--' + path.replace(/\./g, '-');
+};
+
+// Собирает плоский объект всех CSS-переменных из токенов
+const collectCssVariables = (tokens: ColorTokens): Record<string, string> => {
+  const result: Record<string, string> = {};
+  
+  const flatten = (obj: any, prefix = '') => {
+    for (const key in obj) {
+      const value = obj[key];
+      const fullPath = prefix ? `${prefix}.${key}` : key;
+      if (value && typeof value === 'object' && 'value' in value) {
+        // это листовой токен
+        const cssVar = pathToCssVar(fullPath);
+        result[cssVar] = value.value;
+      } else if (value && typeof value === 'object') {
+        flatten(value, fullPath);
+      }
+    }
+  };
+  
+  flatten(tokens);
+  return result;
+};
+
+const pages = [
+  { id: 'home', label: 'Главная', path: '/preview-pages/home.html' },
+  { id: 'shop', label: 'Магазин', path: '/preview-pages/shop.html' },
+  { id: 'awards', label: 'Витрина наград', path: '/preview-pages/awards.html' },
+  { id: 'leaderboard', label: 'Доска лидеров', path: '/preview-pages/leaderboard.html' },
+  { id: 'profile', label: 'Мой профиль', path: '/preview-pages/profile.html' },
+];
+
 export default function PlatformPreview({ tokens }: PlatformPreviewProps) {
-  // Разбираем токены на группы
-  const bg = tokens.background;
-  const txt = tokens.text;
-  const btn = tokens.buttons;
-  const icons = tokens.icons;
-  const status = tokens.status;
+  const [currentPage, setCurrentPage] = useState('home');
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // При изменении токенов отправляем новые переменные в iframe
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    const cssVars = collectCssVariables(tokens);
+    // Ждём, пока iframe загрузится, и отправляем сообщение
+    const sendVars = () => {
+      iframe.contentWindow?.postMessage(cssVars, '*');
+    };
+
+    // Если iframe уже загружен, отправляем сразу
+    if (iframe.contentDocument?.readyState === 'complete') {
+      sendVars();
+    } else {
+      // Иначе ждём события load
+      iframe.addEventListener('load', sendVars, { once: true });
+    }
+  }, [tokens, currentPage]); // перезапускаем при смене страницы или токенов
 
   return (
-    <div
-      className="rounded-xl border p-6 shadow-sm"
-      style={{
-        background: getColor(bg.globe),
-        borderColor: getColor(bg.border)
-      }}
-    >
-      {/* Шапка с логотипом и аватарками */}
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div
-            className="h-8 w-8 rounded-lg"
-            style={{ background: getColor(bg.accent) }}
-          />
-          <span
-            className="text-lg font-semibold"
-            style={{ color: getColor(txt.primary) }}
-          >
-            Teal HR
-          </span>
-        </div>
-        <div className="flex gap-2">
-          <div
-            className="h-8 w-8 rounded-full"
-            style={{ background: getColor(bg['island-inner']) }}
-          />
-          <div
-            className="h-8 w-8 rounded-full"
-            style={{ background: getColor(bg.accent) }}
-          />
-        </div>
-      </div>
-
-      {/* Навигация */}
-      <div
-        className="mb-6 flex gap-4 border-b pb-2"
-        style={{ borderColor: getColor(bg.border) }}
-      >
-        {['Dashboard', 'Employees', 'Settings'].map((item) => (
-          <span
-            key={item}
-            className="text-sm"
-            style={{ color: getColor(txt.primary) }}
-          >
-            {item}
-          </span>
-        ))}
-      </div>
-
-      {/* Контент — карточка сотрудника и график */}
-      <div className="grid grid-cols-3 gap-4">
-        {/* Карточка сотрудника */}
-        <div
-          className="rounded-lg p-4"
-          style={{
-            background: getColor(bg.island),
-            borderColor: getColor(bg.border)
-          }}
-        >
-          <div className="mb-2 flex items-center gap-3">
-            <div
-              className="h-10 w-10 rounded-full"
-              style={{ background: getColor(bg.accent) }}
+    <div className="flex flex-col h-full">
+      <Tabs value={currentPage} onValueChange={setCurrentPage} className="w-full">
+        <TabsList className="grid grid-cols-5 mb-4">
+          {pages.map(page => (
+            <TabsTrigger key={page.id} value={page.id}>
+              {page.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        {pages.map(page => (
+          <TabsContent key={page.id} value={page.id} className="flex-1">
+            <iframe
+              ref={iframeRef}
+              src={page.path}
+              className="w-full h-full border-0 rounded-md"
+              title={page.label}
+              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"
             />
-            <div>
-              <p
-                className="font-medium"
-                style={{ color: getColor(txt.primary) }}
-              >
-                Анна Иванова
-              </p>
-              <p
-                className="text-xs"
-                style={{ color: getColor(txt.secondary) }}
-              >
-                HR-менеджер
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-1">
-            <span
-              className="rounded-full px-2 py-0.5 text-xs text-white"
-              style={{ background: getColor(status.success) }}
-            >
-              Активен
-            </span>
-          </div>
-        </div>
-
-        {/* График посещаемости */}
-        <div
-          className="col-span-2 rounded-lg p-4"
-          style={{ background: getColor(bg['island-inner']) }}
-        >
-          <p
-            className="mb-2 text-sm font-medium"
-            style={{ color: getColor(txt.primary) }}
-          >
-            Заявки сегодня
-          </p>
-          <div className="flex h-16 items-end gap-2">
-            {[40, 70, 30, 90, 50].map((h, i) => (
-              <div
-                key={i}
-                className="w-6 rounded-t-md"
-                style={{
-                  height: `${h}%`,
-                  background: getColor(bg.accent)
-                }}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Кнопки действий */}
-      <div className="mt-6 flex gap-3">
-        <button
-          className="rounded-lg px-4 py-2 text-sm font-medium text-white"
-          style={{
-            background: getColor(btn.primary['fill-border-default'])
-          }}
-        >
-          Создать отчёт
-        </button>
-        <button
-          className="rounded-lg border-2 px-4 py-2 text-sm font-medium"
-          style={{
-            background: getColor(btn.outline.fill),
-            borderColor: getColor(btn.outline['border-text-default']),
-            color: getColor(btn.outline['border-text-default'])
-          }}
-        >
-          Экспорт
-        </button>
-      </div>
+          </TabsContent>
+        ))}
+      </Tabs>
     </div>
   );
 }
