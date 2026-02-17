@@ -1,4 +1,4 @@
-import { FlatToken, rgbStringToHex } from '@/lib/colorGenerator';
+import { FlatToken, rgbStringToHex, normalizeHex } from '@/lib/colorGenerator'; // добавили normalizeHex
 import { useState } from 'react';
 
 interface Props {
@@ -45,7 +45,10 @@ export default function TokenEditor({ tokens, onTokenChange }: Props) {
 
 function TokenRow({ token, onChange }: { token: FlatToken; onChange: (path: string, val: string) => void }) {
   const isRgba = token.value.startsWith('rgba');
-  const hex = rgbStringToHex(token.value);
+  const hex = rgbStringToHex(token.value) || '#000000'; // если не удалось распарсить, ставим чёрный
+
+  // Состояние для поля ввода hex (чтобы можно было вводить промежуточные значения)
+  const [inputHex, setInputHex] = useState(hex);
 
   // Извлекаем текущую альфу для rgba-цветов
   const getCurrentAlpha = (): number => {
@@ -58,18 +61,43 @@ function TokenRow({ token, onChange }: { token: FlatToken; onChange: (path: stri
 
   const [alpha, setAlpha] = useState<number>(getCurrentAlpha());
 
-  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newHex = e.target.value;
+  // Синхронизируем inputHex при изменении hex извне (например, при загрузке новых токенов)
+  useState(() => {
+    setInputHex(hex);
+  }, [hex]);
+
+  const handleColorPickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newHex = e.target.value; // это уже нормализованный hex от браузера
+    setInputHex(newHex); // обновляем поле ввода
+    applyHex(newHex);
+  };
+
+  const applyHex = (newHex: string) => {
     const r = parseInt(newHex.slice(1, 3), 16);
     const g = parseInt(newHex.slice(3, 5), 16);
     const b = parseInt(newHex.slice(5, 7), 16);
 
     if (isRgba) {
-      // сохраняем текущую альфу
       onChange(token.path, `rgba(${r}, ${g}, ${b}, ${alpha})`);
     } else {
       onChange(token.path, `rgb(${r}, ${g}, ${b})`);
     }
+  };
+
+  const handleHexInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setInputHex(raw); // разрешаем вводить что угодно
+
+    // Пытаемся нормализовать
+    const normalized = normalizeHex(raw);
+    if (normalized) {
+      applyHex(normalized);
+    }
+  };
+
+  const handleHexInputBlur = () => {
+    // При потере фокуса возвращаем корректный hex (текущий цвет)
+    setInputHex(hex);
   };
 
   const handleAlphaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,8 +119,17 @@ function TokenRow({ token, onChange }: { token: FlatToken; onChange: (path: stri
         <input
           type="color"
           value={hex}
-          onChange={handleColorChange}
+          onChange={handleColorPickerChange}
           className="h-6 w-6 shrink-0 cursor-pointer rounded border-0 p-0"
+        />
+        {/* Новое поле для ручного ввода hex */}
+        <input
+          type="text"
+          value={inputHex}
+          onChange={handleHexInputChange}
+          onBlur={handleHexInputBlur}
+          className="w-20 rounded border border-border bg-background px-1 py-0.5 text-xs font-mono"
+          placeholder="#RRGGBB"
         />
         <span className="min-w-0 flex-1 truncate text-xs">{label}</span>
         <span className="shrink-0 font-mono text-[10px] text-muted-foreground">{token.value}</span>

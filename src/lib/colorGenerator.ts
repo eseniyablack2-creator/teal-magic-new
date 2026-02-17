@@ -509,6 +509,32 @@ export function rgbStringToHex(rgb: string): string {
   return `#${[r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')}`;
 }
 
+/**
+ * Нормализует введённый hex-код: удаляет лишние символы, добавляет #,
+ * преобразует 3-значный в 6-значный.
+ * @param value - строка с hex-кодом (например, "ff00ff", "#FF00FF", "##f0f")
+ * @returns нормализованный hex вида "#RRGGBB" или null, если строка невалидна
+ */
+export function normalizeHex(value: string): string | null {
+  // Оставляем только # и hex-символы
+  let cleaned = value.replace(/[^0-9A-F#]/gi, '');
+  // Оставляем только последний #, если их несколько
+  const hashIndex = cleaned.lastIndexOf('#');
+  if (hashIndex !== -1) {
+    cleaned = cleaned.slice(hashIndex);
+  } else {
+    cleaned = '#' + cleaned;
+  }
+  // Убираем все не-hex символы после #
+  cleaned = '#' + cleaned.slice(1).replace(/[^0-9A-F]/gi, '');
+  // Если длина (без #) равна 3, преобразуем в 6
+  if (cleaned.length === 4) {
+    cleaned = '#' + cleaned[1] + cleaned[1] + cleaned[2] + cleaned[2] + cleaned[3] + cleaned[3];
+  }
+  // Если получилось 7 символов (включая #) — возвращаем, иначе null
+  return cleaned.length === 7 ? cleaned.toUpperCase() : null;
+}
+
 export function setTokenValue(tokens: ColorTokens, path: string, newValue: string): ColorTokens {
   const clone = JSON.parse(JSON.stringify(tokens));
   const parts = path.replace(/^\./, '').split('.');
