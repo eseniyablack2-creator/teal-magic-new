@@ -201,7 +201,6 @@ const Index = () => {
   const [thanksData, setThanksData] = useState<string>();
   const [thanksLeaderData, setThanksLeaderData] = useState<string>();
   const [logoData, setLogoData] = useState<string>();
-
   const bannerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -673,7 +672,16 @@ const Index = () => {
             </TabsContent>
             <TabsContent value="preview">
               <div className="rounded-xl border border-border bg-background p-6 shadow-sm">
-                <PlatformPreview tokens={tokens} />
+                <PlatformPreview 
+  tokens={tokens} 
+  brandAssets={{
+    logo: logoData,
+    avatar: avatarData,
+    currencyIcon: currencyIconData,
+    thanksIcon: thanksData,
+    thanksLeaderIcon: thanksLeaderData,
+    banner: bannerData,
+  }} />
               </div>
             </TabsContent>
           </Tabs>
