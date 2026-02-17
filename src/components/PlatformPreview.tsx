@@ -4,10 +4,11 @@ import { ColorTokens } from '@/lib/colorGenerator';
 
 interface PlatformPreviewProps {
   tokens: ColorTokens;
+  brandAssets?: Record<string, string>; // добавлено
 }
 
-const IFRAME_WIDTH = 1500;          // ширина для десктопного меню
-const MAX_CONTAINER_HEIGHT = 2000;  // максимальная высота контейнера
+const IFRAME_WIDTH = 1500;
+const MAX_CONTAINER_HEIGHT = 900;
 
 const pathToCssVar = (path: string): string => '--' + path.replace(/\./g, '-');
 
@@ -18,7 +19,13 @@ const collectCssVariables = (tokens: ColorTokens): Record<string, string> => {
       const value = obj[key];
       const fullPath = prefix ? `${prefix}.${key}` : key;
       if (value && typeof value === 'object' && 'value' in value) {
-        result[pathToCssVar(fullPath)] = value.value;
+        if (value.type === 'boxShadow' && typeof value.value === 'object') {
+          const shadow = value.value;
+          const shadowString = `${shadow.x}px ${shadow.y}px ${shadow.blur}px ${shadow.spread}px ${shadow.color}`;
+          result[pathToCssVar(fullPath)] = shadowString;
+        } else {
+          result[pathToCssVar(fullPath)] = value.value;
+        }
       } else if (value && typeof value === 'object') {
         flatten(value, fullPath);
       }
@@ -36,15 +43,14 @@ const pages = [
   { id: 'profile', label: 'Мой профиль', path: '/preview-pages/profile.html' },
 ];
 
-export default function PlatformPreview({ tokens }: PlatformPreviewProps) {
+export default function PlatformPreview({ tokens, brandAssets }: PlatformPreviewProps) {
   const [currentPage, setCurrentPage] = useState('home');
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [wrapperHeight, setWrapperHeight] = useState(800);
-  const [isIframeReady, setIsIframeReady] = useState(false); // готов ли скрипт внутри iframe
+  const [isIframeReady, setIsIframeReady] = useState(false);
 
-  // ResizeObserver для масштабирования
   useEffect(() => {
     if (!containerRef.current) return;
     const resizeObserver = new ResizeObserver(entries => {
@@ -59,7 +65,6 @@ export default function PlatformPreview({ tokens }: PlatformPreviewProps) {
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Функция отправки цветов в iframe
   const sendColorsToIframe = useCallback(() => {
     const iframe = iframeRef.current;
     if (!iframe || !isIframeReady) return;
@@ -68,39 +73,52 @@ export default function PlatformPreview({ tokens }: PlatformPreviewProps) {
     iframe.contentWindow?.postMessage(cssVars, '*');
   }, [tokens, isIframeReady]);
 
-  // Отправляем цвета при изменении токенов (если iframe готов)
   useEffect(() => {
     sendColorsToIframe();
   }, [sendColorsToIframe]);
 
-  // Слушаем сообщение 'preview-ready' от iframe
+  // Отправка атрибутов бренда
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe || !isIframeReady || !brandAssets) return;
+    const hasAny = Object.values(brandAssets).some(v => v);
+    if (!hasAny) return;
+
+    console.log('📤 Отправляем атрибуты бренда в iframe:', brandAssets);
+    iframe.contentWindow?.postMessage({
+      type: 'BRAND_ASSETS',
+      assets: brandAssets
+    }, '*');
+  }, [brandAssets, isIframeReady, currentPage]);
+
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.source !== iframeRef.current?.contentWindow) return; // сообщение только от нашего iframe
+      if (event.source !== iframeRef.current?.contentWindow) return;
       if (event.data?.type === 'preview-ready') {
         console.log(`🎯 iframe готов к приёму: ${currentPage}`);
         setIsIframeReady(true);
-        // Немедленно отправляем цвета после готовности
         sendColorsToIframe();
+        // Отправляем атрибуты сразу после готовности
+        if (brandAssets && Object.values(brandAssets).some(v => v)) {
+          iframeRef.current?.contentWindow?.postMessage({
+            type: 'BRAND_ASSETS',
+            assets: brandAssets
+          }, '*');
+        }
       }
     };
-
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [currentPage, sendColorsToIframe]);
+  }, [currentPage, sendColorsToIframe, brandAssets]);
 
-  // При смене страницы сбрасываем флаг готовности
   useEffect(() => {
     setIsIframeReady(false);
   }, [currentPage]);
 
-  // Обработчик загрузки iframe (теперь только для логов и установки белого фона)
   const handleIframeLoad = () => {
     console.log(`✅ iframe загружен (HTML): ${currentPage}`);
     const iframe = iframeRef.current;
     if (!iframe) return;
-
-    // Белый фон (на случай, если страница не имеет своего)
     const iframeDoc = iframe.contentDocument;
     if (iframeDoc) {
       iframeDoc.body.style.backgroundColor = '#ffffff';
@@ -139,7 +157,7 @@ export default function PlatformPreview({ tokens }: PlatformPreviewProps) {
         >
           <iframe
             ref={iframeRef}
-            key={currentPage} // принудительное пересоздание при смене страницы
+            key={currentPage}
             src={pages.find(p => p.id === currentPage)?.path}
             width={IFRAME_WIDTH}
             height={wrapperHeight}
