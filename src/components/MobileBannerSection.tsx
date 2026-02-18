@@ -458,7 +458,7 @@ function CoinsIcon({ accentColor }: { accentColor: string }) {
   );
 }
 
-// ----- МОБИЛЬНАЯ ВЕРСИЯ ДЕФОЛТНОГО БАННЕРА (ФИКСИРОВАННЫЙ РАЗМЕР 328x364) -----
+// ----- МОБИЛЬНАЯ ВЕРСИЯ ДЕФОЛТНОГО БАННЕРА (328x364) -----
 const MobileCustomizableBanner = ({ tokens }: { tokens: ColorTokens }) => {
   const bg = tokens.background;
   const txt = tokens.text;
@@ -473,33 +473,22 @@ const MobileCustomizableBanner = ({ tokens }: { tokens: ColorTokens }) => {
       }}
     >
       <div className="flex flex-1 flex-col justify-center p-3">
-        <h1
-          className="text-xl font-extrabold leading-6"
-          style={{ color: getColor(txt.primary) }}
-        >
+        <h1 className="text-xl font-extrabold leading-6" style={{ color: getColor(txt.primary) }}>
           Программа лояльности
         </h1>
-        <p
-          className="mt-1 text-sm font-bold leading-5"
-          style={{ color: getColor(txt.primary) }}
-        >
+        <p className="mt-1 text-sm font-bold leading-5" style={{ color: getColor(txt.primary) }}>
           «С вас – активность, с нас – Teal!»
         </p>
-        <p
-          className="mt-1 text-xs leading-4"
-          style={{ color: getColor(txt.primary) }}
-        >
+        <p className="mt-1 text-xs leading-4" style={{ color: getColor(txt.primary) }}>
           Получай внутреннюю валюту Teal за участие в корпоративных активностях
           и получай брендированный мерч компании и другие вознаграждения в
           онлайн-магазине.
         </p>
       </div>
       <div className="relative h-48 w-full flex-shrink-0 overflow-hidden">
-        {/* Фон с монетами */}
         <div className="h-full w-full">
           <CoinsIcon accentColor={getColor(bg.accent)} />
         </div>
-        {/* Иконка валюты по центру, размер 3.5rem */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <CurrencyIcon color={getColor(icons['primary-inverse'])} width={3.5} />
         </div>
@@ -507,6 +496,7 @@ const MobileCustomizableBanner = ({ tokens }: { tokens: ColorTokens }) => {
     </div>
   );
 };
+
 
 // ----- ОСНОВНОЙ КОМПОНЕНТ МОБИЛЬНОГО БАННЕРА -----
 export default function MobileBannerSection({
@@ -543,7 +533,9 @@ export default function MobileBannerSection({
             <X size={16} />
           </button>
         )}
+        {/* Добавлен key для сброса input при удалении */}
         <input
+          key={fileData ? 'uploaded' : 'empty'}
           id={`upload-${assetKey}`}
           type="file"
           accept="image/png,image/jpeg,image/svg+xml"
@@ -555,9 +547,8 @@ export default function MobileBannerSection({
         />
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex justify-center">
         {fileData ? (
-          // Загруженное изображение
           <div
             className="flex items-center justify-center overflow-hidden rounded-lg border border-border/50 bg-muted/30"
             style={{ width: 328, height: 364 }}
@@ -565,15 +556,11 @@ export default function MobileBannerSection({
             <img
               src={fileData}
               alt="Мобильный баннер"
-              className="h-full w-full object-contain rounded-lg"
+              className="h-full w-full object-cover rounded-lg"
             />
           </div>
         ) : (
-          // Дефолтный баннер
           <MobileCustomizableBanner tokens={tokens} />
-        )}
-        {fileData && (
-          <span className="text-xs text-muted-foreground">✓ Загружено</span>
         )}
       </div>
     </div>

@@ -527,9 +527,12 @@ const BannerSection = forwardRef<HTMLDivElement, BannerSectionProps>(
       >
         <div className="p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              🖼️ Главный баннер
-            </h3>
+              <div>
+          <p className="text-sm font-medium">📌Главный баннер</p>
+          <p className="text-xs text-muted-foreground">
+            Рекомендуемый размер: 1200×292px, макс 3MB
+          </p>
+        </div>
             {!bannerData ? (
               <label
                 htmlFor="upload-banner"
@@ -570,9 +573,6 @@ const BannerSection = forwardRef<HTMLDivElement, BannerSectionProps>(
           ) : (
             <CustomizableBanner ref={ref} tokens={tokens} />
           )}
-          <p className="mt-2 text-xs text-muted-foreground">
-            Рекомендуемый размер: 1200×292px, макс 3MB
-          </p>
         </div>
       </div>
     );
