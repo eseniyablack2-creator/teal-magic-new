@@ -127,19 +127,21 @@ export default function PlatformPreview({ tokens, brandAssets }: PlatformPreview
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex flex-wrap gap-2 mb-4">
-        {pages.map(page => (
-          <Button
-            key={page.id}
-            variant={currentPage === page.id ? 'default' : 'outline'}
-            size="sm"
-            className="rounded-full"
-            onClick={() => setCurrentPage(page.id)}
-          >
-            {page.label}
-          </Button>
-        ))}
-      </div>
+     <div className="flex flex-wrap gap-2 mb-4">
+  {pages.map(page => (
+    <button
+      key={page.id}
+      onClick={() => setCurrentPage(page.id)}
+      className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+        currentPage === page.id
+          ? 'bg-primary text-white'
+          : 'border border-border bg-background text-foreground hover:bg-island-inner'
+      }`}
+    >
+      {page.label}
+    </button>
+  ))}
+</div>
 
       <div
         ref={containerRef}

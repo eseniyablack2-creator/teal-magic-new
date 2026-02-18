@@ -1,4 +1,13 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
 import {
   generateTokens,
   flattenTokens,
@@ -385,7 +394,10 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div 
+  className="min-h-screen bg-muted/30" 
+  style={{ '--island-inner': tokens ? getColor(tokens.background['island-inner']) : '#EBF8F3' } as any}
+>
       <header className="border-b border-border bg-background px-6 py-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -406,28 +418,28 @@ const Index = () => {
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 placeholder="например teal hr"
-                className="rounded-md border border-border bg-background px-3 py-1.5 text-sm w-48 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-md border border-border bg-background px-3 py-2.5 text-sm w-48 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             </div>
 
-            {tokens && (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleDownload}
-                  className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary/90"
-                >
-                  <Download size={16} />
-                  Скачать JSON
-                </button>
-                <button
-                  onClick={handleExportAll}
-                  className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary/90"
-                >
-                  <Package size={16} />
-                  Экспорт проекта
-                </button>
-              </div>
-            )}
+{tokens && (
+  <div className="flex items-center gap-2">
+    <button
+      onClick={handleDownload}
+      className="flex items-center gap-2 rounded-lg border border-border bg-background px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+    >
+      <Download size={16} />
+      Скачать JSON
+    </button>
+ <button
+  onClick={handleExportAll}
+  className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-muted hover:text-foreground"
+>
+  <Package size={16} />
+  Экспорт проекта
+</button>
+  </div>
+)}
           </div>
         </div>
       </header>
@@ -439,10 +451,10 @@ const Index = () => {
           </div>
         ) : (
           <Tabs defaultValue="customize" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="customize">Кастомизация</TabsTrigger>
-              <TabsTrigger value="preview">Превью платформы</TabsTrigger>
-            </TabsList>
+<TabsList className="grid w-full grid-cols-2 bg-muted">
+  <TabsTrigger value="customize">Кастомизация</TabsTrigger>
+  <TabsTrigger value="preview">Превью платформы</TabsTrigger>
+</TabsList>
 
             <TabsContent value="customize">
               <div className="space-y-6">
@@ -454,118 +466,135 @@ const Index = () => {
                   onUpload={(file) => handleFileUpload('banner', file)}
                   onRemove={() => setBannerData(undefined)}
                 />
-
                 <div className="flex flex-col gap-6 lg:flex-row">
                   {/* Левая панель — управление */}
-                  <div className="w-full space-y-6 lg:w-80 lg:shrink-0">
-                    {/* Primary цвет */}
-                    <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
-                      <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                        Primary цвет
-                      </h2>
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="color"
-                          value={primaryColor}
-                          onChange={(e) => setPrimaryColor(e.target.value)}
-                          className="h-12 w-12 cursor-pointer rounded-lg border-0 p-0"
-                        />
-                        <input
-                          type="text"
-                          value={primaryColor.toUpperCase()}
-                          onChange={handleHexChange(setPrimaryColor, primaryColor)}
-                          onPaste={handleHexPaste(setPrimaryColor)}
-                          className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm text-foreground"
-                          placeholder="#009B65"
-                        />
-                      </div>
-                    </div>
+<div className="w-full space-y-6 lg:w-80 lg:shrink-0">
+  {/* Primary цвет */}
+  <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
+    <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+      Primary цвет
+    </h2>
+    <div className="flex items-center gap-3">
+      {/* Цветной квадрат 32x32 с границей и скруглением */}
+      <div className="relative h-8 w-8 flex-shrink-0">
+        <div
+          className="absolute inset-0 rounded-lg border border-border/50"
+          style={{ backgroundColor: primaryColor }}
+        />
+        <input
+          type="color"
+          value={primaryColor}
+          onChange={(e) => setPrimaryColor(e.target.value)}
+          className="absolute inset-0 opacity-0 cursor-pointer"
+        />
+      </div>
+      {/* Текстовый инпут такой же высоты 32px */}
+      <input
+        type="text"
+        value={primaryColor.toUpperCase()}
+        onChange={handleHexChange(setPrimaryColor, primaryColor)}
+        onPaste={handleHexPaste(setPrimaryColor)}
+        className="w-full h-8 rounded-lg border border-border bg-background px-3 py-0 font-mono text-sm text-foreground"
+        placeholder="#009B65"
+      />
+    </div>
+  </div>
 
-                    {/* Цвет основного текста */}
-                    <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
-                      <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                        Цвет текста (text.primary)
-                      </h2>
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="color"
-                          value={textPrimaryColor}
-                          onChange={(e) => setTextPrimaryColor(e.target.value)}
-                          className="h-12 w-12 cursor-pointer rounded-lg border-0 p-0"
-                        />
-                        <input
-                          type="text"
-                          value={textPrimaryColor.toUpperCase()}
-                          onChange={handleHexChange(setTextPrimaryColor, textPrimaryColor)}
-                          onPaste={handleHexPaste(setTextPrimaryColor)}
-                          className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm text-foreground"
-                          placeholder="#14140F"
-                        />
-                      </div>
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        От него строятся вторичный/третичный текст, граница, модальное окно и инверсные цвета.
-                      </p>
-                    </div>
-
-                    {/* Статусные цвета */}
-                    <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
-                      <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                        Статусные цвета
-                      </h2>
-                      <div className="space-y-3">
-                        {(['warning', 'danger', 'success'] as const).map((key) => {
-                          const setStatusColor = (value: string) =>
-                            setStatusColors((prev) => ({ ...prev, [key]: value }));
-                          return (
-                            <div key={key} className="flex items-center gap-3">
-                              <input
-                                type="color"
-                                value={statusColors[key]}
-                                onChange={(e) => setStatusColor(e.target.value)}
-                                className="h-8 w-8 cursor-pointer rounded border-0 p-0"
-                              />
-                              <span className="text-sm capitalize text-foreground">{key}</span>
-                              <input
-                                type="text"
-                                value={statusColors[key].toUpperCase()}
-                                onChange={handleHexChange(setStatusColor, statusColors[key])}
-                                onPaste={handleHexPaste(setStatusColor)}
-                                className="ml-auto w-28 rounded-md border border-border bg-background px-2 py-1 font-mono text-xs text-foreground"
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
+  {/* Цвет основного текста */}
+  <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
+    <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+      Цвет текста (text.primary)
+    </h2>
+    <div className="flex items-center gap-3">
+      <div className="relative h-8 w-8 flex-shrink-0">
+        <div
+          className="absolute inset-0 rounded-lg border border-border/50"
+          style={{ backgroundColor: textPrimaryColor }}
+        />
+        <input
+          type="color"
+          value={textPrimaryColor}
+          onChange={(e) => setTextPrimaryColor(e.target.value)}
+          className="absolute inset-0 opacity-0 cursor-pointer"
+        />
+      </div>
+      <input
+        type="text"
+        value={textPrimaryColor.toUpperCase()}
+        onChange={handleHexChange(setTextPrimaryColor, textPrimaryColor)}
+        onPaste={handleHexPaste(setTextPrimaryColor)}
+        className="w-full h-8 rounded-lg border border-border bg-background px-3 py-0 font-mono text-sm text-foreground"
+        placeholder="#14140F"
+      />
+    </div>
+    <p className="mt-2 text-xs text-muted-foreground">
+      От него строятся вторичный/третичный текст, граница, модальное окно и инверсные цвета.
+    </p>
+  </div>
+  
+  {/* Статусные цвета */}
+  <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
+    <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+      Статусные цвета
+    </h2>
+    <div className="space-y-3">
+      {(['warning', 'danger', 'success'] as const).map((key) => {
+        const setStatusColor = (value: string) =>
+          setStatusColors((prev) => ({ ...prev, [key]: value }));
+        const color = statusColors[key];
+        return (
+          <div key={key} className="flex items-center gap-3">
+            <div className="relative h-8 w-8 flex-shrink-0">
+              <div className="absolute inset-0 rounded-lg border border-border/30" style={{ backgroundColor: color }} />
+              <input
+                type="color"
+                value={color}
+                onChange={(e) => setStatusColor(e.target.value)}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
+            </div>
+            <span className="text-sm capitalize text-foreground">{key}</span>
+            <input
+              type="text"
+              value={color.toUpperCase()}
+              onChange={handleHexChange(setStatusColor, color)}
+              onPaste={handleHexPaste(setStatusColor)}
+              className="ml-auto w-28 rounded-md border border-border bg-background px-2 py-1 font-mono text-xs text-foreground"
+            />
+          </div>
+        );
+      })}
+    </div>
+  </div>
                     {/* Алгоритм генерации */}
-                    <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
-                      <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                        Алгоритм генерации
-                      </h2>
-                      <select
-                        value={algorithm}
-                        onChange={(e) => setAlgorithm(e.target.value as AlgorithmType)}
-                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-                      >
-                        <option value="default">✨ Default (эталонные токены)</option>
-                        <option value="monochromatic">Monochromatic</option>
-                        <option value="saturation">Saturation Scale</option>
-                      </select>
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        Monochromatic → светлые оттенки с 10% насыщенности.
-                      </p>
-                    </div>
+<div className="rounded-xl border border-border bg-background p-5 shadow-sm">
+  <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+    Алгоритм генерации
+  </h2>
+  <Select value={algorithm} onValueChange={(value: AlgorithmType) => setAlgorithm(value)}>
+    <SelectTrigger className="w-full">
+      <SelectValue placeholder="Выберите алгоритм" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="default">✨ Default</SelectItem>
+      <SelectItem value="monochromatic">Monochromatic</SelectItem>
+      <SelectItem value="saturation">Saturation Scale</SelectItem>
+    </SelectContent>
+  </Select>
+  <div className="mt-2 text-xs text-muted-foreground">
+    {algorithm === 'default' && 'Default → эталонные токены'}
+    {algorithm === 'monochromatic' && 'Monochromatic → приглушает цвет, делает его мягче и пастельнее'}
+    {algorithm === 'saturation' && 'Saturation Scale → усиливает цвет, делает его ярче и насыщеннее'}
+  </div>
+</div>
 
-                    {/* Ручная коррекция токенов */}
-                    {tokens && (
-                      <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
-                        <TokenEditor tokens={flattenTokens(tokens)} onTokenChange={handleTokenChange} />
-                      </div>
-                    )}
-                  </div>
-
-
+ {/* Ручная коррекция токенов */}
+  {tokens && (
+    <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
+      <TokenEditor tokens={flattenTokens(tokens)} onTokenChange={handleTokenChange} />
+    </div>
+  )}
+</div>
                   {/* Правая панель — контент */}
                   <div className="min-w-0 flex-1">
                     <div className="space-y-6">
@@ -634,7 +663,7 @@ const Index = () => {
   <div className="mt-4 flex justify-end">
     <button
       onClick={handleResetAttributes}
-      className="flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+  className="flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
     >
       <RotateCcw size={16} />
       Сбросить атрибуты
