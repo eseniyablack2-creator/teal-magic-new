@@ -527,9 +527,12 @@ const BannerSection = forwardRef<HTMLDivElement, BannerSectionProps>(
 <div className="p-6">
   {/* Верхняя часть: заголовок и кнопка (без нижнего отступа) */}
   <div className="flex items-center justify-between">
-    <h3 className="text-sm font-medium text-muted-foreground">
-      🖼️ Главный баннер
-    </h3>
+    <div>
+          <p className="text-sm font-medium"> 📌Главный баннер</p>
+          <p className="text-xs text-muted-foreground">
+            Рекомендуемый размер: 1200×292px, макс 3MB
+          </p>
+        </div>
     {!bannerData ? (
       <label
         htmlFor="upload-banner"
@@ -558,11 +561,6 @@ const BannerSection = forwardRef<HTMLDivElement, BannerSectionProps>(
       }}
     />
   </div>
-
-  {/* Текст о размере — с небольшим отступом сверху и снизу */}
-  <p className="mt-1 mb-3 text-xs text-muted-foreground">
-    Рекомендуемый размер: 1200×292px, макс 3MB
-  </p>
 
   {/* Баннер (загруженный или дефолтный) */}
   {bannerData ? (
