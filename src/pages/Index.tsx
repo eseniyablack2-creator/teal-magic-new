@@ -20,9 +20,11 @@ import CurrencyIconCard from '@/components/CurrencyIconCard';
 import ThanksIconCard from '@/components/ThanksIconCard';
 import ThanksLeaderIconCard from '@/components/ThanksLeaderIconCard';
 import LogoCard from '@/components/LogoCard';
+import MobileBannerSection from '@/components/MobileBannerSection';
 
-// Для экспорта
+// Для экспорта и иконок
 import JSZip from 'jszip';
+import { Download, Package, RotateCcw } from 'lucide-react';
 
 // ==============================================
 //   ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ЭКСПОРТА
@@ -115,9 +117,6 @@ const getColor = (val: { value: string | object }): string => {
 //   ФУНКЦИИ ГЕНЕРАЦИИ СТАНДАРТНЫХ SVG (СИНХРОННЫЕ)
 // ==============================================
 
-/**
- * Генерация аватара компании: круг с primary, белая иконка (primary-inverse)
- */
 const generateDefaultAvatarSVG = (tokens: ColorTokens, size: number = 24): string => {
   const bgColor = getColor(tokens.icons.primary);
   const iconColor = getColor(tokens.icons['primary-inverse']);
@@ -134,15 +133,11 @@ const generateDefaultAvatarSVG = (tokens: ColorTokens, size: number = 24): strin
   </svg>`;
 };
 
-/**
- * Генерация иконки валюты: звезда цвета primary на прозрачном фоне.
- * Полностью соответствует DefaultCurrencyIcon (с fill-rule="evenodd").
- */
 const generateDefaultCurrencySVG = (tokens: ColorTokens, size: number = 24): string => {
   const color = getColor(tokens.icons.primary);
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <g clipPath="url(#clip0_currency)">
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M2 12C2 6.48 6.48 2 12 2C17.52 2 22 6.48 22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12ZM13.043 10.78L14.108 7.45C14.108 7.45 14.273 6.968 13.867 6.652C13.55 6.41 13.204 6.501 13.008 6.622C12.9572 6.65283 12.9098 6.68714 12.8624 6.72145L12.834 6.742L12.8128 6.75753C12.7638 6.79352 12.7144 6.82979 12.662 6.863C12.39 7.058 12.118 7.254 11.862 7.45C11.681 7.578 11.5 7.71 11.32 7.842C11.139 7.974 10.958 8.106 10.777 8.234L9.602 9.093C9.319 9.304 9.038 9.507 8.749 9.714L8.502 9.892C8.22659 10.0943 7.95025 10.2953 7.673 10.495L7.605 10.543C7.309 10.752 7.01 10.963 7.01 11.368C7.01 11.414 7.01 11.459 7.025 11.504C7.07 11.821 7.311 12.002 7.598 12.092C7.748 12.137 7.899 12.183 8.05 12.243C8.23084 12.303 8.41169 12.3605 8.59253 12.4179L8.728 12.461L8.84097 12.4969C9.02931 12.5568 9.21766 12.6167 9.406 12.68L10.009 12.876L10.0906 12.9022C10.2627 12.9575 10.4357 13.0131 10.611 13.071C10.688 13.097 10.763 13.122 10.848 13.148C10.819 13.248 10.79 13.348 10.747 13.448C10.71 13.576 10.668 13.704 10.626 13.832C10.6135 13.8722 10.6007 13.9124 10.5879 13.9527C10.56 14.0408 10.5321 14.1292 10.506 14.217C10.4681 14.3299 10.4328 14.4427 10.3975 14.5556L10.3617 14.6698L10.3577 14.6825L10.355 14.691C10.306 14.85 10.257 15.008 10.205 15.166L9.933 16.026C9.913 16.096 9.89 16.166 9.866 16.236L9.86101 16.2513C9.81664 16.3872 9.77228 16.5231 9.753 16.658C9.73047 16.8002 9.746 16.9458 9.798 17.08C9.85978 17.2114 9.95936 17.3215 10.084 17.396C10.461 17.638 10.807 17.412 11.124 17.186C11.2344 17.1103 11.3406 17.0313 11.4472 16.9519L11.478 16.929L11.5267 16.8932C11.6275 16.819 11.7286 16.7445 11.832 16.673C11.998 16.553 12.16 16.432 12.322 16.311C12.484 16.19 12.646 16.07 12.812 15.95C12.9603 15.838 13.112 15.7266 13.2642 15.6148L13.362 15.543L13.4149 15.5042C13.5816 15.382 13.7492 15.259 13.912 15.136C14.0919 15.0075 14.2702 14.8768 14.447 14.744C14.624 14.612 14.801 14.48 14.982 14.352C15.133 14.247 15.28 14.138 15.426 14.028C15.573 13.919 15.721 13.81 15.871 13.704C15.9419 13.6512 16.0134 13.6003 16.0851 13.5493L16.143 13.508C16.233 13.444 16.323 13.38 16.413 13.313C16.685 13.117 17.031 12.845 16.986 12.469C16.9331 12.0033 16.4586 11.8548 16.0691 11.733L16.066 11.732L15.916 11.685C15.713 11.617 15.506 11.553 15.298 11.489C15.091 11.425 14.884 11.361 14.68 11.293L13.233 10.841C13.171 10.82 13.107 10.8 13.043 10.78Z" fill="${color}"/>
+      <path fillRule="evenodd" clipRule="evenodd" d="M2 12C2 6.48 6.48 2 12 2C17.52 2 22 6.48 22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12ZM13.043 10.78L14.108 7.45C14.108 7.45 14.273 6.968 13.867 6.652C13.55 6.41 13.204 6.501 13.008 6.622C12.9572 6.65283 12.9098 6.68714 12.8624 6.72145L12.834 6.742L12.8128 6.75753C12.7638 6.79352 12.7144 6.82979 12.662 6.863C12.39 7.058 12.118 7.254 11.862 7.45C11.681 7.578 11.5 7.71 11.32 7.842C11.139 7.974 10.958 8.106 10.777 8.234L9.602 9.093C9.319 9.304 9.038 9.507 8.749 9.714L8.502 9.892C8.22659 10.0943 7.95025 10.2953 7.673 10.495L7.605 10.543C7.309 10.752 7.01 10.963 7.01 11.368C7.01 11.414 7.01 11.459 7.025 11.504C7.07 11.821 7.311 12.002 7.598 12.092C7.748 12.137 7.899 12.183 8.05 12.243C8.23084 12.303 8.41169 12.3605 8.59253 12.4179L8.728 12.461L8.84097 12.4969C9.02931 12.5568 9.21766 12.6167 9.406 12.68L10.009 12.876L10.0906 12.9022C10.2627 12.9575 10.4357 13.0131 10.611 13.071C10.688 13.097 10.763 13.122 10.848 13.148C10.819 13.248 10.79 13.348 10.747 13.448C10.71 13.576 10.668 13.704 10.626 13.832C10.6135 13.8722 10.6007 13.9124 10.5879 13.9527C10.56 14.0408 10.5321 14.1292 10.506 14.217C10.4681 14.3299 10.4328 14.4427 10.3975 14.5556L10.3617 14.6698L10.3577 14.6825L10.355 14.691C10.306 14.85 10.257 15.008 10.205 15.166L9.933 16.026C9.913 16.096 9.89 16.166 9.866 16.236L9.86101 16.2513C9.81664 16.3872 9.77228 16.5231 9.753 16.658C9.73047 16.8002 9.746 16.9458 9.798 17.08C9.85978 17.2114 9.95936 17.3215 10.084 17.396C10.461 17.638 10.807 17.412 11.124 17.186C11.2344 17.1103 11.3406 17.0313 11.4472 16.9519L11.478 16.929L11.5267 16.8932C11.6275 16.819 11.7286 16.7445 11.832 16.673C11.998 16.553 12.16 16.432 12.322 16.311C12.484 16.19 12.646 16.07 12.812 15.95C12.9603 15.838 13.112 15.7266 13.2642 15.6148L13.362 15.543L13.4149 15.5042C13.5816 15.382 13.7492 15.259 13.912 15.136C14.0919 15.0075 14.2702 14.8768 14.447 14.744C14.624 14.612 14.801 14.48 14.982 14.352C15.133 14.247 15.28 14.138 15.426 14.028C15.573 13.919 15.721 13.81 15.871 13.704C15.9419 13.6512 16.0134 13.6003 16.0851 13.5493L16.143 13.508C16.233 13.444 16.323 13.38 16.413 13.313C16.685 13.117 17.031 12.845 16.986 12.469C16.9331 12.0033 16.4586 11.8548 16.0691 11.733L16.066 11.732L15.916 11.685C15.713 11.617 15.506 11.553 15.298 11.489C15.091 11.425 14.884 11.361 14.68 11.293L13.233 10.841C13.171 10.82 13.107 10.8 13.043 10.78Z" fill="${color}"/>
     </g>
     <defs>
       <clipPath id="clip0_currency">
@@ -152,9 +147,6 @@ const generateDefaultCurrencySVG = (tokens: ColorTokens, size: number = 24): str
   </svg>`;
 };
 
-/**
- * Генерация иконки благодарностей (сердце)
- */
 const generateDefaultThanksSVG = (tokens: ColorTokens, size: number = 24): string => {
   const color = getColor(tokens.icons.primary);
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -163,9 +155,6 @@ const generateDefaultThanksSVG = (tokens: ColorTokens, size: number = 24): strin
   </svg>`;
 };
 
-/**
- * Генерация иконки благодарностей для руководителя (корона)
- */
 const generateDefaultThanksLeaderSVG = (tokens: ColorTokens, size: number = 24): string => {
   const color = getColor(tokens.icons.primary);
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -173,9 +162,6 @@ const generateDefaultThanksLeaderSVG = (tokens: ColorTokens, size: number = 24):
   </svg>`;
 };
 
-/**
- * Генерация логотипа
- */
 const generateDefaultLogoSVG = (tokens: ColorTokens, width: number = 128, height: number = 40): string => {
   const color = getColor(tokens.icons.primary);
   return `<svg width="${width}" height="${height}" viewBox="0 0 119 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -201,6 +187,7 @@ const Index = () => {
   const [thanksData, setThanksData] = useState<string>();
   const [thanksLeaderData, setThanksLeaderData] = useState<string>();
   const [logoData, setLogoData] = useState<string>();
+  const [bannerMobileData, setBannerMobileData] = useState<string | null>(null); // ✅ добавлено
   const bannerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -226,6 +213,16 @@ const Index = () => {
 
   const handleDownload = () => {
     if (!tokens) return;
+    
+    // Создаём глубокую копию токенов, чтобы не мутировать оригинал
+    const tokensCopy = JSON.parse(JSON.stringify(tokens));
+    
+    // Удаляем поля, которые не должны попадать в JSON
+    if (tokensCopy.background) {
+      delete tokensCopy.background['accent-rgb'];
+      delete tokensCopy.background['accent-secondary-rgb'];
+    }
+    
     let fileName = 'tokens.json';
     if (companyName.trim() !== '') {
       const safeName = sanitizeFileName(companyName);
@@ -233,7 +230,7 @@ const Index = () => {
         fileName = `tokens-${safeName}.json`;
       }
     }
-    const blob = new Blob([JSON.stringify(tokens, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(tokensCopy, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -255,6 +252,7 @@ const Index = () => {
     setThanksData(undefined);
     setThanksLeaderData(undefined);
     setLogoData(undefined);
+    setBannerMobileData(null);
   };
 
   const handleFileUpload = (key: string, file: File) => {
@@ -268,6 +266,7 @@ const Index = () => {
       if (e.target?.result) {
         switch (key) {
           case 'banner': setBannerData(e.target.result as string); break;
+          case 'bannerMobile': setBannerMobileData(e.target.result as string); break; // ✅ добавлено
           case 'avatar': setAvatarData(e.target.result as string); break;
           case 'currency': setCurrencyIconData(e.target.result as string); break;
           case 'thanks': setThanksData(e.target.result as string); break;
@@ -307,7 +306,7 @@ const Index = () => {
   };
 
   // ==============================================
-  //   ЭКСПОРТ ПРОЕКТА (ZIP) — ИСПРАВЛЕННАЯ ВЕРСИЯ
+  //   ЭКСПОРТ ПРОЕКТА (ZIP)
   // ==============================================
 
   const handleExportAll = async () => {
@@ -317,9 +316,14 @@ const Index = () => {
     const safeName = sanitizeFileName(companyName);
     const nameSuffix = safeName ? `-${safeName}` : '';
 
-    // 1. JSON с токенами (с суффиксом компании)
+    // 1. JSON с токенами (без accent-rgb полей)
+    const tokensForExport = JSON.parse(JSON.stringify(tokens));
+    if (tokensForExport.background) {
+      delete tokensForExport.background['accent-rgb'];
+      delete tokensForExport.background['accent-secondary-rgb'];
+    }
     const jsonFileName = safeName ? `tokens-${safeName}.json` : 'tokens.json';
-    zip.file(jsonFileName, JSON.stringify(tokens, null, 2));
+    zip.file(jsonFileName, JSON.stringify(tokensForExport, null, 2));
 
     // 2. Конфигурация атрибутов (имена БЕЗ суффикса)
     const assets: Array<{
@@ -392,23 +396,31 @@ const Index = () => {
         fileNameBase: `bannerDesktop`,
         // дефолтный баннер НЕ экспортируем
       },
+      {
+        key: 'bannerMobile',
+        data: bannerMobileData,
+        svgWidth: 328,
+        svgHeight: 364,
+        pngWidth: 656,
+        pngHeight: 728,
+        fileNameBase: `bannerMobile`,
+        // дефолтного нет
+      },
     ];
 
     for (const asset of assets) {
-      // Баннер — только если загружен
-      if (asset.key === 'banner' && !asset.data) continue;
+      // Пропускаем баннеры, если они не загружены
+      if ((asset.key === 'banner' || asset.key === 'bannerMobile') && !asset.data) continue;
 
       try {
-        // -------------------------------------------------
-        //   ЗАГРУЖЕННЫЙ ФАЙЛ
-        // -------------------------------------------------
+        // ЗАГРУЖЕННЫЙ ФАЙЛ
         if (asset.data && asset.data.startsWith('data:image/')) {
           const dataUrl = asset.data.trim();
           const blob = await dataURLToBlob(dataUrl);
           const ext = getFileExtension(dataUrl);
 
           if (ext === 'svg+xml' || ext === 'svg') {
-            // ✅ СОХРАНЯЕМ ОРИГИНАЛЬНЫЙ SVG (без изменения размеров)
+            // Сохраняем оригинальный SVG
             try {
               const base64 = dataUrl.split(',')[1];
               if (!base64) throw new Error('No base64 data');
@@ -416,17 +428,14 @@ const Index = () => {
               zip.file(`${asset.fileNameBase}.svg`, svgString);
             } catch (svgError) {
               console.error(`Ошибка декодирования SVG для ${asset.key}:`, svgError);
-              // Пропускаем файл, но продолжаем экспорт
             }
           } else {
-            // ✅ PNG/JPG → ресайзим до целевого размера (PNG)
+            // PNG/JPG → ресайзим до целевого размера
             const pngBlob = await resizeImageBlob(blob, asset.pngWidth, asset.pngHeight);
             zip.file(`${asset.fileNameBase}.png`, pngBlob);
           }
         }
-        // -------------------------------------------------
-        //   ДЕФОЛТНЫЙ АТРИБУТ (SVG)
-        // -------------------------------------------------
+        // ДЕФОЛТНЫЙ АТРИБУТ (SVG)
         else if (asset.defaultGenerator) {
           const svgString = asset.defaultGenerator(tokens);
           zip.file(`${asset.fileNameBase}.svg`, svgString);
@@ -436,7 +445,7 @@ const Index = () => {
       }
     }
 
-    // 3. ZIP-архив (с суффиксом компании)
+    // 3. ZIP-архив
     const zipBlob = await zip.generateAsync({ type: 'blob' });
     const zipFileName = safeName ? `project-${safeName}.zip` : 'project.zip';
     const url = URL.createObjectURL(zipBlob);
@@ -479,12 +488,14 @@ const Index = () => {
                   onClick={handleDownload}
                   className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary/90"
                 >
+                  <Download size={16} />
                   Скачать JSON
                 </button>
                 <button
                   onClick={handleExportAll}
                   className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary/90"
                 >
+                  <Package size={16} />
                   Экспорт проекта
                 </button>
               </div>
@@ -669,19 +680,39 @@ const Index = () => {
                   </div>
                 </div>
               </div>
+              {/* Мобильный баннер и кнопка "Очистить всё" */}
+              <div className="mt-4">
+                <MobileBannerSection
+                  tokens={tokens}
+                  fileData={bannerMobileData ?? undefined}
+                  onUpload={(key, file) => handleFileUpload('bannerMobile', file)}
+                  onRemove={() => setBannerMobileData(null)}
+                />
+              </div>
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={handleReset}
+                  className="flex items-center gap-2 rounded-lg border border-border bg-background px-6 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                >
+                  <RotateCcw size={16} />
+                  Очистить всё
+                </button>
+              </div>
             </TabsContent>
             <TabsContent value="preview">
               <div className="rounded-xl border border-border bg-background p-6 shadow-sm">
-                <PlatformPreview 
-  tokens={tokens} 
-  brandAssets={{
-    logo: logoData,
-    avatar: avatarData,
-    currencyIcon: currencyIconData,
-    thanksIcon: thanksData,
-    thanksLeaderIcon: thanksLeaderData,
-    banner: bannerData,
-  }} />
+                <PlatformPreview
+                  tokens={tokens}
+                  brandAssets={{
+                    logo: logoData,
+                    avatar: avatarData,
+                    currencyIcon: currencyIconData,
+                    thanksIcon: thanksData,
+                    thanksLeaderIcon: thanksLeaderData,
+                    banner: bannerData,
+                    bannerMobile: bannerMobileData, // ✅ добавлено
+                  }}
+                />
               </div>
             </TabsContent>
           </Tabs>

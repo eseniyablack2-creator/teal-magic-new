@@ -41,7 +41,7 @@ export default function LogoCard({ tokens, fileData, onUpload, onRemove }: LogoC
         <input
           id={`upload-${assetKey}`}
           type="file"
-          accept="image/svg+xml" // только SVG, строго по требованиям
+          accept="image/png,image/jpeg,image/svg+xml"
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
