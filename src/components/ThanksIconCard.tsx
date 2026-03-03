@@ -1,6 +1,6 @@
-import { ColorTokens } from '@/lib/colorGenerator';
-import { Upload, X } from 'lucide-react';
-import DefaultThanksIcon from './DefaultThanksIcon';
+import { ColorTokens } from "@/lib/colorGenerator";
+import { Upload, X } from "lucide-react";
+import DefaultThanksIcon from "./DefaultThanksIcon";
 
 interface ThanksIconCardProps {
   tokens: ColorTokens;
@@ -9,8 +9,13 @@ interface ThanksIconCardProps {
   onRemove: (key: string) => void;
 }
 
-export default function ThanksIconCard({ tokens, fileData, onUpload, onRemove }: ThanksIconCardProps) {
-  const assetKey = 'thanks';
+export default function ThanksIconCard({
+  tokens,
+  fileData,
+  onUpload,
+  onRemove,
+}: ThanksIconCardProps) {
+  const assetKey = "thanks";
 
   return (
     <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
@@ -69,7 +74,9 @@ export default function ThanksIconCard({ tokens, fileData, onUpload, onRemove }:
         ) : (
           <>
             <DefaultThanksIcon tokens={tokens} size={48} />
-            <span className="text-xs text-muted-foreground">Стандартная иконка</span>
+            <span className="text-xs text-muted-foreground">
+              Стандартная иконка
+            </span>
           </>
         )}
       </div>

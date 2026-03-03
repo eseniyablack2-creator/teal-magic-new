@@ -1,5 +1,5 @@
-import { FlatToken, rgbStringToHex, normalizeHex } from '@/lib/colorGenerator';
-import { useState } from 'react';
+import { FlatToken, rgbStringToHex, normalizeHex } from "@/lib/colorGenerator";
+import { useState } from "react";
 
 interface Props {
   tokens: FlatToken[];
@@ -10,8 +10,8 @@ export default function TokenEditor({ tokens, onTokenChange }: Props) {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const groups: Record<string, FlatToken[]> = {};
-  tokens.forEach(t => {
-    const group = t.path.split('.').slice(0, 2).join('.');
+  tokens.forEach((t) => {
+    const group = t.path.split(".").slice(0, 2).join(".");
     if (!groups[group]) groups[group] = [];
     groups[group].push(t);
   });
@@ -28,11 +28,13 @@ export default function TokenEditor({ tokens, onTokenChange }: Props) {
             className="flex w-full items-center justify-between px-3 py-2 text-left text-xs font-medium hover:bg-muted/50"
           >
             <span>{group}</span>
-            <span className="text-muted-foreground">{expanded === group ? '−' : '+'}</span>
+            <span className="text-muted-foreground">
+              {expanded === group ? "−" : "+"}
+            </span>
           </button>
           {expanded === group && (
             <div className="space-y-1 border-t border-border px-3 py-2">
-              {items.map(t => (
+              {items.map((t) => (
                 <TokenRow key={t.path} token={t} onChange={onTokenChange} />
               ))}
             </div>
@@ -43,9 +45,15 @@ export default function TokenEditor({ tokens, onTokenChange }: Props) {
   );
 }
 
-function TokenRow({ token, onChange }: { token: FlatToken; onChange: (path: string, val: string) => void }) {
-  const isRgba = token.value.startsWith('rgba');
-  const hex = rgbStringToHex(token.value) || '#000000';
+function TokenRow({
+  token,
+  onChange,
+}: {
+  token: FlatToken;
+  onChange: (path: string, val: string) => void;
+}) {
+  const isRgba = token.value.startsWith("rgba");
+  const hex = rgbStringToHex(token.value) || "#000000";
   const [inputHex, setInputHex] = useState(hex);
 
   const getCurrentAlpha = (): number => {
@@ -101,7 +109,10 @@ function TokenRow({ token, onChange }: { token: FlatToken; onChange: (path: stri
     onChange(token.path, `rgba(${r}, ${g}, ${b}, ${newAlpha})`);
   };
 
-  const label = token.path.split('.').slice(2).join('.') || token.path.split('.').pop() || '';
+  const label =
+    token.path.split(".").slice(2).join(".") ||
+    token.path.split(".").pop() ||
+    "";
 
   return (
     <div className="flex flex-col gap-1 py-1">
@@ -128,7 +139,9 @@ function TokenRow({ token, onChange }: { token: FlatToken; onChange: (path: stri
           placeholder="#RRGGBB"
         />
         <span className="min-w-0 flex-1 truncate text-xs">{label}</span>
-        <span className="shrink-0 font-mono text-[10px] text-muted-foreground">{token.value}</span>
+        <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+          {token.value}
+        </span>
       </div>
       {isRgba && (
         <div className="flex items-center gap-2 pl-8">

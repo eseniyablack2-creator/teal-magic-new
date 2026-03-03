@@ -1,6 +1,6 @@
-import { ColorTokens } from '@/lib/colorGenerator';
-import { Upload, X } from 'lucide-react';
-import DefaultThanksLeaderIcon from './DefaultThanksLeaderIcon';
+import { ColorTokens } from "@/lib/colorGenerator";
+import { Upload, X } from "lucide-react";
+import DefaultThanksLeaderIcon from "./DefaultThanksLeaderIcon";
 
 interface ThanksLeaderIconCardProps {
   tokens: ColorTokens;
@@ -9,14 +9,21 @@ interface ThanksLeaderIconCardProps {
   onRemove: (key: string) => void;
 }
 
-export default function ThanksLeaderIconCard({ tokens, fileData, onUpload, onRemove }: ThanksLeaderIconCardProps) {
-  const assetKey = 'thanksLeader';
+export default function ThanksLeaderIconCard({
+  tokens,
+  fileData,
+  onUpload,
+  onRemove,
+}: ThanksLeaderIconCardProps) {
+  const assetKey = "thanksLeader";
 
   return (
     <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium">Иконка благодарностей (руководитель)</p>
+          <p className="text-sm font-medium">
+            Иконка благодарностей (руководитель)
+          </p>
           <p className="text-xs text-muted-foreground">
             SVG: 24×24px | PNG: 1000×1000px
           </p>
@@ -69,7 +76,9 @@ export default function ThanksLeaderIconCard({ tokens, fileData, onUpload, onRem
         ) : (
           <>
             <DefaultThanksLeaderIcon tokens={tokens} size={48} />
-            <span className="text-xs text-muted-foreground">Стандартная иконка</span>
+            <span className="text-xs text-muted-foreground">
+              Стандартная иконка
+            </span>
           </>
         )}
       </div>

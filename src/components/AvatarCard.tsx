@@ -1,6 +1,6 @@
-import { ColorTokens } from '@/lib/colorGenerator';
-import { Upload, X } from 'lucide-react';
-import DefaultAvatar from './DefaultAvatar';
+import { ColorTokens } from "@/lib/colorGenerator";
+import { Upload, X } from "lucide-react";
+import DefaultAvatar from "./DefaultAvatar";
 
 interface AvatarCardProps {
   tokens: ColorTokens;
@@ -9,8 +9,13 @@ interface AvatarCardProps {
   onRemove: (key: string) => void;
 }
 
-export default function AvatarCard({ tokens, fileData, onUpload, onRemove }: AvatarCardProps) {
-  const assetKey = 'avatar'; // фиксированный ключ для аватара
+export default function AvatarCard({
+  tokens,
+  fileData,
+  onUpload,
+  onRemove,
+}: AvatarCardProps) {
+  const assetKey = "avatar"; // фиксированный ключ для аватара
 
   return (
     <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
@@ -53,23 +58,25 @@ export default function AvatarCard({ tokens, fileData, onUpload, onRemove }: Ava
       {/* Превью: по умолчанию 24px, загруженное — 48px */}
       <div className="flex items-center gap-3">
         {fileData ? (
-  <>
-    <div
-      className="flex items-center justify-center overflow-hidden rounded-full border border-border/50 bg-muted/30"
-      style={{ width: 48, height: 48 }}
-    >
-      <img
-        src={fileData}
-        alt="Аватар компании"
-        className="h-full w-full object-cover"  // ← ИСПРАВЛЕНО
-      />
-    </div>
-    <span className="text-xs text-muted-foreground">✓ Загружено</span>
-  </>
+          <>
+            <div
+              className="flex items-center justify-center overflow-hidden rounded-full border border-border/50 bg-muted/30"
+              style={{ width: 48, height: 48 }}
+            >
+              <img
+                src={fileData}
+                alt="Аватар компании"
+                className="h-full w-full object-cover" // ← ИСПРАВЛЕНО
+              />
+            </div>
+            <span className="text-xs text-muted-foreground">✓ Загружено</span>
+          </>
         ) : (
           <>
             <DefaultAvatar tokens={tokens} size={48} />
-            <span className="text-xs text-muted-foreground">Стандартный аватар</span>
+            <span className="text-xs text-muted-foreground">
+              Стандартный аватар
+            </span>
           </>
         )}
       </div>

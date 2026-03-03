@@ -1,23 +1,24 @@
-import { useTranslation } from 'react-i18next';
-import cs from 'classnames';
-import { BannerDtoType } from 'common/types/server-api-dtos';
-import { useCustomizationStore } from 'common/services/customizations-service/service-store/service-store';
-import { customizationsServiceBannersSelector } from 'common/services/customizations-service/service-store/selectors';
-import { Paper } from 'ui-kit/paper';
-import { Box } from 'ui-kit/box';
-import { Typography } from 'ui-kit/typography';
-import { LazyImage } from 'ui-kit/lazy-image';
-import { Icon } from 'ui-kit/icon';
-import { CoinsIcon } from './icons';
-import { TextWithCurrencyName } from 'common/components/text-with-currency-name';
-import { CurrencyIcon } from 'common/components/currency-icon';
-import { useBreakpoints } from 'common/hooks/use-breakpoints';
-import { checkEqual } from 'common/helpers/checkEqual';
-import { openNewTab } from 'common/helpers/open-new-tab';
-import { FILE_END_POINT } from 'common/constants/common';
-import styles from './banner.module.scss';
+import { useTranslation } from "react-i18next";
+import cs from "classnames";
+import { BannerDtoType } from "common/types/server-api-dtos";
+import { useCustomizationStore } from "common/services/customizations-service/service-store/service-store";
+import { customizationsServiceBannersSelector } from "common/services/customizations-service/service-store/selectors";
+import { Paper } from "ui-kit/paper";
+import { Box } from "ui-kit/box";
+import { Typography } from "ui-kit/typography";
+import { LazyImage } from "ui-kit/lazy-image";
+import { Icon } from "ui-kit/icon";
+import { CoinsIcon } from "./icons";
+import { TextWithCurrencyName } from "common/components/text-with-currency-name";
+import { CurrencyIcon } from "common/components/currency-icon";
+import { useBreakpoints } from "common/hooks/use-breakpoints";
+import { checkEqual } from "common/helpers/checkEqual";
+import { openNewTab } from "common/helpers/open-new-tab";
+import { FILE_END_POINT } from "common/constants/common";
+import styles from "./banner.module.scss";
 
-const openLinkHandler = (link: string | null) => (link ? () => openNewTab(link) : undefined);
+const openLinkHandler = (link: string | null) =>
+  link ? () => openNewTab(link) : undefined;
 
 const DefaultBanner = () => {
   const { t } = useTranslation();
@@ -26,16 +27,20 @@ const DefaultBanner = () => {
     <Paper className={styles.defaultBanner}>
       <div className={styles.textBlock}>
         <Typography className={styles.title} variant="h0" component="h1">
-          {t('banner.title')}
+          {t("banner.title")}
         </Typography>
         <TextWithCurrencyName
           className={styles.subtitle}
           variant="h5"
           variantLg="h3"
           component="p"
-          translationKey={t('banner.subtitle')}
+          translationKey={t("banner.subtitle")}
         />
-        <TextWithCurrencyName variant="body-s" variantLg="body-l" translationKey={t('banner.description')} />
+        <TextWithCurrencyName
+          variant="body-s"
+          variantLg="body-l"
+          translationKey={t("banner.description")}
+        />
       </div>
 
       <div className={styles.iconWrapper}>
@@ -61,7 +66,10 @@ type BannerProps = {
 const CustomBanner = ({ banner }: BannerProps) => {
   return (
     <Paper
-      className={cs(styles.customBanner, { [styles.overlay]: banner.overlayEnabled, [styles.link]: !!banner.link })}
+      className={cs(styles.customBanner, {
+        [styles.overlay]: banner.overlayEnabled,
+        [styles.link]: !!banner.link,
+      })}
       style={{
         backgroundImage: banner.backgroundImage
           ? `url("${FILE_END_POINT}/${banner.backgroundImage.fullPath}")`
@@ -95,7 +103,10 @@ const CustomBanner = ({ banner }: BannerProps) => {
 
       {banner.mainImage && (
         <Box className={styles.mainImageWrapper} position="relative">
-          <LazyImage className={styles.mainImage} src={`${FILE_END_POINT}/${banner.mainImage.fullPath}`} />
+          <LazyImage
+            className={styles.mainImage}
+            src={`${FILE_END_POINT}/${banner.mainImage.fullPath}`}
+          />
         </Box>
       )}
     </Paper>
@@ -103,11 +114,14 @@ const CustomBanner = ({ banner }: BannerProps) => {
 };
 
 const ImageBanner = ({ banner }: BannerProps) => {
-  const { isSmallMobile } = useBreakpoints('small-mobile');
+  const { isSmallMobile } = useBreakpoints("small-mobile");
 
   return (
     <LazyImage
-      className={cs(styles.imageBanner, { [styles.notMobileImage]: !isSmallMobile, [styles.link]: !!banner.link })}
+      className={cs(styles.imageBanner, {
+        [styles.notMobileImage]: !isSmallMobile,
+        [styles.link]: !!banner.link,
+      })}
       src={`${FILE_END_POINT}/${isSmallMobile ? banner.mobileImage?.fullPath : banner.backgroundImage?.fullPath}`}
       onClick={openLinkHandler(banner.link)}
     />
@@ -115,13 +129,21 @@ const ImageBanner = ({ banner }: BannerProps) => {
 };
 
 export const Banner = () => {
-  const banners = useCustomizationStore(customizationsServiceBannersSelector, checkEqual);
+  const banners = useCustomizationStore(
+    customizationsServiceBannersSelector,
+    checkEqual,
+  );
 
   if (!banners.length) return <DefaultBanner />;
 
   const bannerToDisplay = banners[0];
 
-  const isImageBanner = bannerToDisplay.mobileImage && bannerToDisplay.backgroundImage;
+  const isImageBanner =
+    bannerToDisplay.mobileImage && bannerToDisplay.backgroundImage;
 
-  return isImageBanner ? <ImageBanner banner={bannerToDisplay} /> : <CustomBanner banner={bannerToDisplay} />;
+  return isImageBanner ? (
+    <ImageBanner banner={bannerToDisplay} />
+  ) : (
+    <CustomBanner banner={bannerToDisplay} />
+  );
 };

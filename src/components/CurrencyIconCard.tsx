@@ -1,6 +1,6 @@
-import { ColorTokens } from '@/lib/colorGenerator';
-import { Upload, X } from 'lucide-react';
-import DefaultCurrencyIcon from './DefaultCurrencyIcon';
+import { ColorTokens } from "@/lib/colorGenerator";
+import { Upload, X } from "lucide-react";
+import DefaultCurrencyIcon from "./DefaultCurrencyIcon";
 
 interface CurrencyIconCardProps {
   tokens: ColorTokens;
@@ -9,8 +9,13 @@ interface CurrencyIconCardProps {
   onRemove: (key: string) => void;
 }
 
-export default function CurrencyIconCard({ tokens, fileData, onUpload, onRemove }: CurrencyIconCardProps) {
-  const assetKey = 'currency';
+export default function CurrencyIconCard({
+  tokens,
+  fileData,
+  onUpload,
+  onRemove,
+}: CurrencyIconCardProps) {
+  const assetKey = "currency";
 
   return (
     <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
@@ -69,7 +74,9 @@ export default function CurrencyIconCard({ tokens, fileData, onUpload, onRemove 
         ) : (
           <>
             <DefaultCurrencyIcon tokens={tokens} size={48} />
-            <span className="text-xs text-muted-foreground">Стандартная иконка</span>
+            <span className="text-xs text-muted-foreground">
+              Стандартная иконка
+            </span>
           </>
         )}
       </div>

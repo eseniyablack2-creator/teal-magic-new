@@ -1,15 +1,18 @@
-import { ColorTokens } from '@/lib/colorGenerator';
+import { ColorTokens } from "@/lib/colorGenerator";
 
 interface DefaultAvatarProps {
   tokens: ColorTokens;
   size?: number; // размер в пикселях, по умолчанию 24
 }
 
-export default function DefaultAvatar({ tokens, size = 24 }: DefaultAvatarProps) {
+export default function DefaultAvatar({
+  tokens,
+  size = 24,
+}: DefaultAvatarProps) {
   const icons = tokens.icons;
 
   const getColor = (val: { value: string | object }): string => {
-    return typeof val.value === 'string' ? val.value : 'transparent';
+    return typeof val.value === "string" ? val.value : "transparent";
   };
 
   return (
@@ -18,11 +21,11 @@ export default function DefaultAvatar({ tokens, size = 24 }: DefaultAvatarProps)
         width: size,
         height: size,
         backgroundColor: getColor(icons.primary),
-        borderRadius: '50%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
+        borderRadius: "50%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
         flexShrink: 0,
       }}
     >
@@ -32,7 +35,7 @@ export default function DefaultAvatar({ tokens, size = 24 }: DefaultAvatarProps)
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ color: getColor(icons['primary-inverse']) }}
+        style={{ color: getColor(icons["primary-inverse"]) }}
       >
         <g clipPath="url(#clip0_4125_463)">
           <path

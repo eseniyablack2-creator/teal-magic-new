@@ -1,6 +1,6 @@
-import { ColorTokens } from '@/lib/colorGenerator';
-import { Upload, X } from 'lucide-react';
-import DefaultLogo from './DefaultLogo';
+import { ColorTokens } from "@/lib/colorGenerator";
+import { Upload, X } from "lucide-react";
+import DefaultLogo from "./DefaultLogo";
 
 interface LogoCardProps {
   tokens: ColorTokens;
@@ -9,17 +9,20 @@ interface LogoCardProps {
   onRemove: (key: string) => void;
 }
 
-export default function LogoCard({ tokens, fileData, onUpload, onRemove }: LogoCardProps) {
-  const assetKey = 'logo';
+export default function LogoCard({
+  tokens,
+  fileData,
+  onUpload,
+  onRemove,
+}: LogoCardProps) {
+  const assetKey = "logo";
 
   return (
     <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
         <div>
           <p className="text-sm font-medium">Логотип компании</p>
-          <p className="text-xs text-muted-foreground">
-            SVG, макс 128×40px
-          </p>
+          <p className="text-xs text-muted-foreground">SVG, макс 128×40px</p>
         </div>
         {!fileData ? (
           <label
@@ -69,7 +72,9 @@ export default function LogoCard({ tokens, fileData, onUpload, onRemove }: LogoC
         ) : (
           <>
             <DefaultLogo tokens={tokens} width={119} height={32} />
-            <span className="text-xs text-muted-foreground">Стандартный логотип</span>
+            <span className="text-xs text-muted-foreground">
+              Стандартный логотип
+            </span>
           </>
         )}
       </div>
