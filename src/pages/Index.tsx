@@ -175,6 +175,7 @@ const Index = () => {
   const [algorithm, setAlgorithm] = useState<AlgorithmType>("default");
   const [tokens, setTokens] = useState<ColorTokens | null>(null);
   const [companyName, setCompanyName] = useState("");
+  const [currencyName, setCurrencyName] = useState("Teal");
 
   const [bannerData, setBannerData] = useState<string>();
   const [bannerMobileData, setBannerMobileData] = useState<string | null>(null);
@@ -416,7 +417,22 @@ const Index = () => {
           const dataUrl = asset.data.trim();
           const blob = await dataURLToBlob(dataUrl);
           const ext = getFileExtension(dataUrl);
-          if (ext === "svg+xml" || ext === "svg") {
+
+          if (asset.key === "banner" || asset.key === "bannerMobile") {
+            // Баннеры (desktop и mobile) всегда выгружаем в PNG,
+            // даже если были загружены как SVG.
+            const minWidth = Math.floor(asset.pngWidth * 0.6);
+            const minHeight = Math.floor(asset.pngHeight * 0.6);
+
+            const pngBlob = await ensurePngUnderLimit(
+              blob,
+              asset.pngWidth,
+              asset.pngHeight,
+              minWidth,
+              minHeight,
+            );
+            zip.file(`${asset.fileNameBase}.png`, pngBlob);
+          } else if (ext === "svg+xml" || ext === "svg") {
             try {
               const base64 = dataUrl.split(",")[1];
               if (!base64) throw new Error("No base64 data");
@@ -429,15 +445,12 @@ const Index = () => {
               );
             }
           } else {
-            // Для растровых изображений при экспорте дополнительно
-            // следим за тем, чтобы итоговый файл был не тяжелее 3 МБ,
-            // по необходимости чуть уменьшая разрешение.
-            const minWidth = asset.key === "banner" || asset.key === "bannerMobile"
-              ? Math.floor(asset.pngWidth * 0.6)
-              : Math.min(512, asset.pngWidth);
-            const minHeight = asset.key === "banner" || asset.key === "bannerMobile"
-              ? Math.floor(asset.pngHeight * 0.6)
-              : Math.min(512, asset.pngHeight);
+            // Для остальных растровых изображений при экспорте
+            // дополнительно следим за тем, чтобы итоговый файл
+            // был не тяжелее 3 МБ, по необходимости немного
+            // уменьшая разрешение.
+            const minWidth = Math.min(512, asset.pngWidth);
+            const minHeight = Math.min(512, asset.pngHeight);
 
             const pngBlob = await ensurePngUnderLimit(
               blob,
@@ -525,23 +538,6 @@ const Index = () => {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap justify-end">
-            <div className="flex items-center gap-2">
-              <label
-                htmlFor="company-name"
-                className="text-sm font-medium whitespace-nowrap"
-              >
-                Компания:
-              </label>
-              <input
-                id="company-name"
-                type="text"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="например teal hr"
-                className="rounded-md border border-border bg-background px-3 py-2.5 text-sm w-48 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              />
-            </div>
-
             {tokens && (
               <div className="flex items-center gap-2">
                 <button
@@ -579,12 +575,50 @@ const Index = () => {
             </TabsList>
 
             <TabsContent value="customize">
-              <div className="space-y-6">
+              <div className="pt-6 space-y-6">
+                {/* Плашка: Наименование компании и Наименование валюты */}
+                <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
+                  <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+                    <div className="flex flex-col gap-2">
+                      <label
+                        htmlFor="company-name"
+                        className="text-sm font-medium text-muted-foreground"
+                      >
+                        Наименование компании
+                      </label>
+                      <input
+                        id="company-name"
+                        type="text"
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
+                        placeholder="например, teal hr"
+                        className="w-full rounded-md border border-border bg-background px-3 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label
+                        htmlFor="currency-name"
+                        className="text-sm font-medium text-muted-foreground"
+                      >
+                        Наименование валюты
+                      </label>
+                      <input
+                        id="currency-name"
+                        type="text"
+                        value={currencyName}
+                        onChange={(e) => setCurrencyName(e.target.value)}
+                        placeholder="например, Teal"
+                        className="w-full rounded-md border border-border bg-background px-3 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                    </div>
+                  </div>
+                </div>
                 {/* Десктопный баннер */}
                 <BannerSection
                   ref={bannerRef}
                   tokens={tokens}
                   bannerData={bannerData}
+                  currencyName={currencyName}
                   onUpload={(file) => handleFileUpload("banner", file)}
                   onRemove={() => setBannerData(undefined)}
                 />
@@ -817,6 +851,7 @@ const Index = () => {
                             <MobileBannerSection
                               tokens={tokens}
                               fileData={bannerMobileData ?? undefined}
+                              currencyName={currencyName}
                               onUpload={(key, file) =>
                                 handleFileUpload("bannerMobile", file)
                               }
@@ -847,6 +882,8 @@ const Index = () => {
                 <Suspense fallback={<div className="text-sm text-muted-foreground">Загрузка превью...</div>}>
                   <PlatformPreview
                     tokens={tokens}
+                    companyName={companyName}
+                    currencyName={currencyName}
                     brandAssets={{
                       logo: logoData,
                       avatar: avatarData,

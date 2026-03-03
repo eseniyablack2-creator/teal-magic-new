@@ -10,10 +10,35 @@ window.addEventListener('message', (event) => {
     });
   }
 
-  // Обработка изображений бренда
+  // Обработка изображений бренда, названия компании и наименования валюты
   if (event.data?.type === 'BRAND_ASSETS') {
     const assets = event.data.assets;
-    console.log('🖼️ Получены атрибуты бренда:', assets);
+    const companyName = event.data.companyName;
+    const currencyName = event.data.currencyName;
+    console.log('🖼️ Получены атрибуты бренда:', assets, 'название компании:', companyName, 'валюта:', currencyName);
+
+    // Название компании: подставляем во все h3 с текстом "Teal HR" (страница Главная)
+    if (companyName !== undefined) {
+      var nameToShow = companyName != null && String(companyName).trim() !== '' ? String(companyName).trim() : 'Teal HR';
+      document.querySelectorAll('h3').forEach(function (h) {
+        var t = h.textContent && h.textContent.trim();
+        if (t === 'Teal HR' || h.getAttribute('data-preview-company') === 'true') {
+          h.textContent = nameToShow;
+          h.setAttribute('data-preview-company', 'true');
+        }
+      });
+    }
+
+    // Наименование валюты: заменяем слово "Teal" на переданное значение (не трогаем "Teal HR")
+    if (currencyName != null && String(currencyName).trim() !== '') {
+      var currencyToShow = String(currencyName).trim();
+      var selector = 'h2, h3, h4, p, span, button';
+      document.querySelectorAll(selector).forEach(function (el) {
+        if (el.textContent && el.textContent.indexOf('Teal') !== -1) {
+          el.textContent = el.textContent.replace(/\bTeal(?!\s*HR\b)/g, currencyToShow);
+        }
+      });
+    }
 
     function replaceWithImage(selector, dataUrl, options = {}) {
       if (!dataUrl) return;
@@ -53,7 +78,8 @@ window.addEventListener('message', (event) => {
       });
     }
 
-    // Применяем для всех типов атрибутов
+    // Применяем для всех типов атрибутов (только если передан объект assets)
+    if (assets) {
     replaceWithImage('[data-testid="logo"]', assets.logo, { objectFit: 'contain' });
     replaceWithImage('[data-testid="company-avatar"]', assets.avatar, { objectFit: 'cover' });
     replaceWithImage('[data-testid="currency-icon"]', assets.currencyIcon, { objectFit: 'contain' });
@@ -79,6 +105,7 @@ window.addEventListener('message', (event) => {
           console.log('✅ Логотип заменён (запасной селектор)');
         }
       }
+    }
     }
   }
 });

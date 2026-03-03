@@ -5,6 +5,7 @@ import { Upload, X } from "lucide-react";
 interface BannerSectionProps {
   tokens: ColorTokens;
   bannerData?: string;
+  currencyName?: string;
   onUpload: (file: File) => void;
   onRemove: () => void;
 }
@@ -1094,11 +1095,14 @@ function CoinsIcon({ accentColor }: { accentColor: string }) {
 }
 
 // ----- ДЕФОЛТНЫЙ БАННЕР С REF -----
-const CustomizableBanner = forwardRef<HTMLDivElement, { tokens: ColorTokens }>(
-  ({ tokens }, ref) => {
+const CustomizableBanner = forwardRef<
+  HTMLDivElement,
+  { tokens: ColorTokens; currencyName?: string }
+>(({ tokens, currencyName }, ref) => {
     const bg = tokens.background;
     const txt = tokens.text;
     const icons = tokens.icons;
+    const displayCurrency = (currencyName?.trim() || "Teal");
 
     const getColor = (val: { value: string | object }): string => {
       return typeof val.value === "string" ? val.value : "transparent";
@@ -1124,13 +1128,13 @@ const CustomizableBanner = forwardRef<HTMLDivElement, { tokens: ColorTokens }>(
             className="mt-1 py-1 text-base font-bold leading-6 lg:mt-0 lg:py-4 lg:text-xl lg:leading-7"
             style={{ color: getColor(txt.primary) }}
           >
-            «С вас – активность, с нас – Teal!»
+            «С вас – активность, с нас – {displayCurrency}!»
           </p>
           <p
             className="text-sm leading-5 lg:text-[1.25rem] lg:leading-7"
             style={{ color: getColor(txt.primary) }}
           >
-            Получай внутреннюю валюту Teal за участие в корпоративных
+            Получай внутреннюю валюту {displayCurrency} за участие в корпоративных
             активностях и получай брендированный мерч компании и другие
             вознаграждения в онлайн-магазине.
           </p>
@@ -1155,7 +1159,7 @@ CustomizableBanner.displayName = "CustomizableBanner";
 
 // ----- ОСНОВНОЙ КОМПОНЕНТ БАННЕРА -----
 const BannerSection = forwardRef<HTMLDivElement, BannerSectionProps>(
-  ({ tokens, bannerData, onUpload, onRemove }, ref) => {
+  ({ tokens, bannerData, currencyName, onUpload, onRemove }, ref) => {
     const bg = tokens.background;
     const getColor = (val: { value: string | object }): string => {
       return typeof val.value === "string" ? val.value : "transparent";
@@ -1217,7 +1221,7 @@ const BannerSection = forwardRef<HTMLDivElement, BannerSectionProps>(
               />
             </div>
           ) : (
-            <CustomizableBanner ref={ref} tokens={tokens} />
+            <CustomizableBanner ref={ref} tokens={tokens} currencyName={currencyName} />
           )}
         </div>
       </div>

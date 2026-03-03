@@ -4,7 +4,9 @@ import { ColorTokens } from "@/lib/colorGenerator";
 
 interface PlatformPreviewProps {
   tokens: ColorTokens;
-  brandAssets?: Record<string, string>; // добавлено
+  companyName?: string;
+  currencyName?: string;
+  brandAssets?: Record<string, string>;
 }
 
 const IFRAME_WIDTH = 1500;
@@ -49,6 +51,8 @@ const pages = [
 
 export default function PlatformPreview({
   tokens,
+  companyName,
+  currencyName = "Teal",
   brandAssets,
 }: PlatformPreviewProps) {
   const [currentPage, setCurrentPage] = useState("home");
@@ -85,22 +89,23 @@ export default function PlatformPreview({
     sendColorsToIframe();
   }, [sendColorsToIframe]);
 
-  // Отправка атрибутов бренда
+  // Отправка атрибутов бренда, названия компании и наименования валюты
   useEffect(() => {
     const iframe = iframeRef.current;
-    if (!iframe || !isIframeReady || !brandAssets) return;
-    const hasAny = Object.values(brandAssets).some((v) => v);
-    if (!hasAny) return;
+    if (!iframe || !isIframeReady) return;
+    const hasAnyAsset = brandAssets && Object.values(brandAssets).some((v) => v);
+    const hasCompanyName = companyName != null && companyName.trim() !== "";
+    const displayCurrencyName = currencyName != null && currencyName.trim() !== "" ? currencyName.trim() : "Teal";
 
-    console.log("📤 Отправляем атрибуты бренда в iframe:", brandAssets);
-    iframe.contentWindow?.postMessage(
-      {
-        type: "BRAND_ASSETS",
-        assets: brandAssets,
-      },
-      "*",
-    );
-  }, [brandAssets, isIframeReady, currentPage]);
+    const payload: { type: string; assets?: Record<string, string>; companyName?: string; currencyName: string } = {
+      type: "BRAND_ASSETS",
+      ...(brandAssets && { assets: brandAssets }),
+      ...(hasCompanyName && { companyName: companyName!.trim() }),
+      currencyName: displayCurrencyName,
+    };
+    console.log("📤 Отправляем атрибуты бренда, название компании и валюту в iframe:", payload);
+    iframe.contentWindow?.postMessage(payload, "*");
+  }, [brandAssets, companyName, currencyName, isIframeReady, currentPage]);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -109,21 +114,21 @@ export default function PlatformPreview({
         console.log(`🎯 iframe готов к приёму: ${currentPage}`);
         setIsIframeReady(true);
         sendColorsToIframe();
-        // Отправляем атрибуты сразу после готовности
-        if (brandAssets && Object.values(brandAssets).some((v) => v)) {
-          iframeRef.current?.contentWindow?.postMessage(
-            {
-              type: "BRAND_ASSETS",
-              assets: brandAssets,
-            },
-            "*",
-          );
-        }
+        const hasAnyAsset = brandAssets && Object.values(brandAssets).some((v) => v);
+        const hasCompanyName = companyName != null && companyName.trim() !== "";
+        const displayCurrencyName = currencyName != null && currencyName.trim() !== "" ? currencyName.trim() : "Teal";
+        const payload: { type: string; assets?: Record<string, string>; companyName?: string; currencyName: string } = {
+          type: "BRAND_ASSETS",
+          ...(brandAssets && { assets: brandAssets }),
+          ...(hasCompanyName && { companyName: companyName!.trim() }),
+          currencyName: displayCurrencyName,
+        };
+        iframeRef.current?.contentWindow?.postMessage(payload, "*");
       }
     };
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [currentPage, sendColorsToIframe, brandAssets]);
+  }, [currentPage, sendColorsToIframe, brandAssets, companyName, currencyName]);
 
   useEffect(() => {
     setIsIframeReady(false);

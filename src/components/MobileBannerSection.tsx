@@ -4,6 +4,7 @@ import { ColorTokens } from "@/lib/colorGenerator";
 interface MobileBannerSectionProps {
   tokens: ColorTokens;
   fileData?: string;
+  currencyName?: string;
   onUpload: (key: string, file: File) => void;
   onRemove: (key: string) => void;
 }
@@ -1098,10 +1099,17 @@ function CoinsIcon({ accentColor }: { accentColor: string }) {
 }
 
 // ----- МОБИЛЬНАЯ ВЕРСИЯ ДЕФОЛТНОГО БАННЕРА (328x364) -----
-const MobileCustomizableBanner = ({ tokens }: { tokens: ColorTokens }) => {
+const MobileCustomizableBanner = ({
+  tokens,
+  currencyName,
+}: {
+  tokens: ColorTokens;
+  currencyName?: string;
+}) => {
   const bg = tokens.background;
   const txt = tokens.text;
   const icons = tokens.icons;
+  const displayCurrency = (currencyName?.trim() || "Teal");
 
   return (
     <div
@@ -1122,13 +1130,13 @@ const MobileCustomizableBanner = ({ tokens }: { tokens: ColorTokens }) => {
           className="mt-1 text-sm font-bold leading-5"
           style={{ color: getColor(txt.primary) }}
         >
-          «С вас – активность, с нас – Teal!»
+          «С вас – активность, с нас – {displayCurrency}!»
         </p>
         <p
           className="mt-1 text-xs leading-4"
           style={{ color: getColor(txt.primary) }}
         >
-          Получай внутреннюю валюту Teal за участие в корпоративных активностях
+          Получай внутреннюю валюту {displayCurrency} за участие в корпоративных активностях
           и получай брендированный мерч компании и другие вознаграждения в
           онлайн-магазине.
         </p>
@@ -1152,6 +1160,7 @@ const MobileCustomizableBanner = ({ tokens }: { tokens: ColorTokens }) => {
 export default function MobileBannerSection({
   tokens,
   fileData,
+  currencyName,
   onUpload,
   onRemove,
 }: MobileBannerSectionProps) {
@@ -1210,7 +1219,7 @@ export default function MobileBannerSection({
             />
           </div>
         ) : (
-          <MobileCustomizableBanner tokens={tokens} />
+          <MobileCustomizableBanner tokens={tokens} currencyName={currencyName} />
         )}
       </div>
     </div>
