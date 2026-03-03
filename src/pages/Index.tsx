@@ -403,7 +403,7 @@ const Index = () => {
           <div>
             <h1 className="text-lg font-bold text-foreground">🎨 Генератор цветовых токенов</h1>
             <p className="text-sm text-muted-foreground">
-              Введите цвета → скачайте готовый JSON
+              Кастомизация, которая работает сама
             </p>
           </div>
 

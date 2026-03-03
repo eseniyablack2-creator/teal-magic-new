@@ -50,7 +50,7 @@ export default function TokenPreview({ tokens, onReset }: Props) {
           <Swatch label="Globe" color={getColor(bg.globe)} />
           <Swatch label="Island" color={getColor(bg.island)} border />
           <Swatch label="Island Inner" color={getColor(bg['island-inner'])} />
-          <Swatch label="Accent" color={getColor(bg.accent)} light />
+          <Swatch label="Accent" color={getColor(bg.accent)} />
           <Swatch label="Border" color={getColor(bg.border)} />
           <Swatch label="Modal" color={getColor(bg.modal)} />
         </div>
