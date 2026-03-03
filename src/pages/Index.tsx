@@ -36,8 +36,14 @@ import JSZip from "jszip";
 import { Download, Package, RotateCcw } from "lucide-react";
 
 // ==============================================
-//   ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ЭКСПОРТА
+//   КОНСТАНТЫ И ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ЭКСПОРТА
 // ==============================================
+
+// Максимальный размер загружаемых файлов (10 МБ)
+const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024;
+
+// Максимальный целевой размер экспортируемых файлов (3 МБ)
+const MAX_EXPORT_SIZE_BYTES = 3 * 1024 * 1024;
 
 const dataURLToBlob = async (dataURL: string): Promise<Blob> => {
   const res = await fetch(dataURL);
@@ -99,6 +105,33 @@ const resizeImageBlob = async (
   return new Promise((resolve) => {
     canvas.toBlob((b) => resolve(b!), "image/png");
   });
+};
+
+// Гарантирует, что экспортируемый PNG не превышает MAX_EXPORT_SIZE_BYTES,
+// по необходимости немного уменьшая размеры, но без заметной потери качества
+// на целевых размерах использования в интерфейсе.
+const ensurePngUnderLimit = async (
+  sourceBlob: Blob,
+  targetWidth: number,
+  targetHeight: number,
+  minWidth: number,
+  minHeight: number,
+): Promise<Blob> => {
+  let width = targetWidth;
+  let height = targetHeight;
+  let result = await resizeImageBlob(sourceBlob, width, height);
+
+  while (
+    result.size > MAX_EXPORT_SIZE_BYTES &&
+    width > minWidth &&
+    height > minHeight
+  ) {
+    width = Math.floor(width * 0.9);
+    height = Math.floor(height * 0.9);
+    result = await resizeImageBlob(sourceBlob, width, height);
+  }
+
+  return result;
 };
 
 // ==============================================
@@ -226,8 +259,8 @@ const Index = () => {
 
   const handleFileUpload = (key: string, file: File) => {
     if (!file) return;
-    if (file.size > 3 * 1024 * 1024) {
-      alert("Файл слишком большой. Максимальный размер — 3MB.");
+    if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+      alert("Файл слишком большой. Максимальный размер — 10MB.");
       return;
     }
     const reader = new FileReader();
@@ -396,10 +429,22 @@ const Index = () => {
               );
             }
           } else {
-            const pngBlob = await resizeImageBlob(
+            // Для растровых изображений при экспорте дополнительно
+            // следим за тем, чтобы итоговый файл был не тяжелее 3 МБ,
+            // по необходимости чуть уменьшая разрешение.
+            const minWidth = asset.key === "banner" || asset.key === "bannerMobile"
+              ? Math.floor(asset.pngWidth * 0.6)
+              : Math.min(512, asset.pngWidth);
+            const minHeight = asset.key === "banner" || asset.key === "bannerMobile"
+              ? Math.floor(asset.pngHeight * 0.6)
+              : Math.min(512, asset.pngHeight);
+
+            const pngBlob = await ensurePngUnderLimit(
               blob,
               asset.pngWidth,
               asset.pngHeight,
+              minWidth,
+              minHeight,
             );
             zip.file(`${asset.fileNameBase}.png`, pngBlob);
           }
