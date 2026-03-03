@@ -134,6 +134,21 @@ export default function PlatformPreview({
     setIsIframeReady(false);
   }, [currentPage]);
 
+  const sendColorsAndBrandToIframe = useCallback(() => {
+    const iframe = iframeRef.current;
+    if (!iframe?.contentWindow) return;
+    const cssVars = collectCssVariables(tokens);
+    iframe.contentWindow.postMessage(cssVars, "*");
+    const displayCurrencyName = currencyName != null && currencyName.trim() !== "" ? currencyName.trim() : "Teal";
+    const payload: { type: string; assets?: Record<string, string>; companyName?: string; currencyName: string } = {
+      type: "BRAND_ASSETS",
+      ...(brandAssets && { assets: brandAssets }),
+      ...(companyName != null && companyName.trim() !== "" && { companyName: companyName.trim() }),
+      currencyName: displayCurrencyName,
+    };
+    iframe.contentWindow.postMessage(payload, "*");
+  }, [tokens, brandAssets, companyName, currencyName]);
+
   const handleIframeLoad = () => {
     console.log(`✅ iframe загружен (HTML): ${currentPage}`);
     const iframe = iframeRef.current;
@@ -142,6 +157,8 @@ export default function PlatformPreview({
     if (iframeDoc) {
       iframeDoc.body.style.backgroundColor = "#ffffff";
     }
+    // Сразу отправляем цвета и атрибуты — не ждём preview-ready, чтобы не было долгой подсветки дефолта
+    sendColorsAndBrandToIframe();
   };
 
   return (

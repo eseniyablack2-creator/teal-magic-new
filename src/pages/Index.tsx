@@ -248,14 +248,22 @@ const Index = () => {
     setLogoData(undefined);
   };
 
+  /** Сброс только изменённых пользователем цветов (primary, text, status, algorithm). */
+  const handleResetColors = () => {
+    setPrimaryColor("#009B65");
+    setTextPrimaryColor("#14140F");
+    setStatusColors({ ...DEFAULT_STATUS });
+    setAlgorithm("default");
+  };
+
   const handleResetAttributes = () => {
     setAvatarData(undefined);
     setCurrencyIconData(undefined);
     setThanksData(undefined);
     setThanksLeaderData(undefined);
     setLogoData(undefined);
+    setBannerData(undefined);
     setBannerMobileData(null);
-    // bannerData не сбрасываем
   };
 
   const handleFileUpload = (key: string, file: File) => {
@@ -574,8 +582,8 @@ const Index = () => {
               <TabsTrigger value="preview">Превью платформы</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="customize">
-              <div className="pt-6 space-y-6">
+            <TabsContent value="customize" className="mt-6">
+              <div className="space-y-6">
                 {/* Плашка: Наименование компании и Наименование валюты */}
                 <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
                   <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
@@ -798,7 +806,7 @@ const Index = () => {
                     <div className="space-y-6">
                       {/* Превью токенов */}
                       <div className="rounded-xl border border-border bg-background p-6 shadow-sm">
-                        <TokenPreview tokens={tokens} onReset={handleReset} />
+                        <TokenPreview tokens={tokens} onReset={handleResetColors} />
                       </div>
 
                       {/* НОВАЯ ПЛАШКА С АТРИБУТАМИ */}
@@ -877,7 +885,7 @@ const Index = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="preview">
+            <TabsContent value="preview" className="mt-6">
               <div className="rounded-xl border border-border bg-background p-6 shadow-sm">
                 <Suspense fallback={<div className="text-sm text-muted-foreground">Загрузка превью...</div>}>
                   <PlatformPreview
