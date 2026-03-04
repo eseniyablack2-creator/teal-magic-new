@@ -129,5 +129,19 @@ window.addEventListener('message', (event) => {
 
 // Сообщаем родителю, что iframe готов
 window.parent.postMessage({ type: 'preview-ready' }, '*');
+
+// Гарантируем единый фон и шрифт Inter во всех превью
 document.body.style.backgroundColor = '#ffffff';
+document.documentElement.style.setProperty('--f-family', "'Inter', sans-serif");
+document.body.style.fontFamily = "var(--f-family, 'Inter', sans-serif)";
+
+// На всякий случай принудительно переопределяем font-family для всего контента превью
+const forceFontStyle = document.createElement('style');
+forceFontStyle.textContent = `
+  body, body * {
+    font-family: var(--f-family, 'Inter', sans-serif) !important;
+  }
+`;
+document.head.appendChild(forceFontStyle);
+
 console.log('✅ Preview listener загружен');
