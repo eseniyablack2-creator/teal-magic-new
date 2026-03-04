@@ -3,7 +3,7 @@
 //   ✅ Добавлены RGB-переменные для accent (с правильными именами)
 // ============================================
 
-import chroma from "chroma-js";
+import chroma, { type Color } from "chroma-js";
 
 // ---------- 1. ТИПЫ ----------
 export type AlgorithmType = "default" | "monochromatic" | "saturation";
@@ -70,7 +70,7 @@ const CONSTANTS = {
 };
 
 // ---------- 3. УТИЛИТЫ ----------
-const rgb = (color: chroma.Chroma): string => {
+const rgb = (color: Color): string => {
   try {
     const [r, g, b] = color.rgb();
     return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
@@ -79,7 +79,7 @@ const rgb = (color: chroma.Chroma): string => {
   }
 };
 
-const rgba = (color: chroma.Chroma, alpha: number): string => {
+const rgba = (color: Color, alpha: number): string => {
   try {
     const [r, g, b] = color.rgb();
     return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${alpha})`;
@@ -88,7 +88,7 @@ const rgba = (color: chroma.Chroma, alpha: number): string => {
   }
 };
 
-function adjustBrightness(color: chroma.Chroma, delta: number): chroma.Chroma {
+function adjustBrightness(color: Color, delta: number): Color {
   const [h, s, l] = color.hsl();
   return chroma.hsl(
     isNaN(h) ? 0 : h,
@@ -99,32 +99,32 @@ function adjustBrightness(color: chroma.Chroma, delta: number): chroma.Chroma {
 
 // ---------- 4. ПРОИЗВОДНЫЕ ОТ TEXT.PRIMARY ----------
 function getTextSecondary(
-  textPrimary: chroma.Chroma,
+  textPrimary: Color,
   hue?: number,
   shiftSaturation: number = 0.25,
-): chroma.Chroma {
+): Color {
   const h = hue ?? textPrimary.get("hsl.h");
   const s = textPrimary.get("hsl.s") * shiftSaturation;
   return chroma.hsl(isNaN(h) ? 0 : h, s, 0.36);
 }
 
 function getTextTertiary(
-  textPrimary: chroma.Chroma,
+  textPrimary: Color,
   hue?: number,
   shiftSaturation: number = 0.15,
-): chroma.Chroma {
+): Color {
   const h = hue ?? textPrimary.get("hsl.h");
   const s = textPrimary.get("hsl.s") * shiftSaturation;
   return chroma.hsl(isNaN(h) ? 0 : h, s, 0.72);
 }
 
-function getBorderFromText(textPrimary: chroma.Chroma): chroma.Chroma {
+function getBorderFromText(textPrimary: Color): Color {
   const h = textPrimary.get("hsl.h");
   const s = textPrimary.get("hsl.s") * 0.35;
   return chroma.hsl(isNaN(h) ? 0 : h, s, 0.81);
 }
 
-function getSecondaryInverse(textPrimary: chroma.Chroma): chroma.Chroma {
+function getSecondaryInverse(textPrimary: Color): Color {
   const [r, g, b] = textPrimary.rgb();
   const p = 0.106;
   return chroma.rgb(
@@ -134,7 +134,7 @@ function getSecondaryInverse(textPrimary: chroma.Chroma): chroma.Chroma {
   );
 }
 
-function getTertiaryInverse(textPrimary: chroma.Chroma): chroma.Chroma {
+function getTertiaryInverse(textPrimary: Color): Color {
   const [r, g, b] = textPrimary.rgb();
   const p = 0.23;
   return chroma.rgb(
@@ -145,7 +145,7 @@ function getTertiaryInverse(textPrimary: chroma.Chroma): chroma.Chroma {
 }
 
 // ---------- 5. DEFAULT-АЛГОРИТМ (ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ) ----------
-function mixWhite(color: chroma.Chroma, percent: number): chroma.Chroma {
+function mixWhite(color: Color, percent: number): Color {
   const [r, g, b] = color.rgb();
   return chroma.rgb(
     Math.round(255 * (1 - percent) + r * percent),
@@ -154,7 +154,7 @@ function mixWhite(color: chroma.Chroma, percent: number): chroma.Chroma {
   );
 }
 
-function desaturate(color: chroma.Chroma, amount: number): chroma.Chroma {
+function desaturate(color: Color, amount: number): Color {
   const [r, g, b] = color.rgb();
   const gray = (r + g + b) / 3;
   return chroma.rgb(
@@ -164,11 +164,11 @@ function desaturate(color: chroma.Chroma, amount: number): chroma.Chroma {
   );
 }
 
-function getDefaultGlobe(primary: chroma.Chroma): chroma.Chroma {
+function getDefaultGlobe(primary: Color): Color {
   return mixWhite(primary, 0.02);
 }
 
-function getDefaultIslandInner(primary: chroma.Chroma): chroma.Chroma {
+function getDefaultIslandInner(primary: Color): Color {
   if (primary.get("hsl.s") < 0.1) return chroma("#f4f4f4");
   return desaturate(mixWhite(primary, 0.07), 0.1);
 }
@@ -194,7 +194,7 @@ function getDefaultButtonColors(primaryHex: string) {
 }
 
 // ---------- 7. ЦВЕТА КНОПОК ДЛЯ АЛГОРИТМОВ ----------
-function getButtonColorsFromBase(baseColor: chroma.Chroma) {
+function getButtonColorsFromBase(baseColor: Color) {
   return {
     default: baseColor,
     hover: adjustBrightness(baseColor, 0.02),
@@ -203,7 +203,7 @@ function getButtonColorsFromBase(baseColor: chroma.Chroma) {
 }
 
 // ---------- 8. MONOCHROMATIC — УЛУЧШЕННАЯ ПАЛИТРА ----------
-function generateMonoPalette(primary: chroma.Chroma) {
+function generateMonoPalette(primary: Color) {
   const h = primary.get("hsl.h");
   const sBase = 0.12;
 
@@ -222,7 +222,7 @@ function generateMonoPalette(primary: chroma.Chroma) {
 }
 
 // ---------- 9. SATURATION SCALE — УЛУЧШЕННАЯ ПАЛИТРА ----------
-function generateSaturationPalette(primary: chroma.Chroma) {
+function generateSaturationPalette(primary: Color) {
   const h = primary.get("hsl.h");
   const lBg = 0.95;
 
@@ -243,7 +243,7 @@ function generateSaturationPalette(primary: chroma.Chroma) {
 function adaptStatusColors(
   status: StatusColors,
   algorithm: AlgorithmType,
-  primary: chroma.Chroma,
+  primary: Color,
 ): StatusColors {
   const adapted = { ...status };
 
@@ -280,21 +280,21 @@ export function generateTokens(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- accent-rgb and other dynamic keys assigned after initial object
   let background: any;
   let textDerivatives: {
-    secondary: chroma.Chroma;
-    tertiary: chroma.Chroma;
-    border: chroma.Chroma;
+    secondary: Color;
+    tertiary: Color;
+    border: Color;
   };
 
-  let btnDefault: chroma.Chroma;
-  let btnHover: chroma.Chroma;
-  let btnActive: chroma.Chroma;
+  let btnDefault: Color;
+  let btnHover: Color;
+  let btnActive: Color;
 
   // ----- DEFAULT -----
   if (algorithm === "default") {
-    let globeColor: chroma.Chroma;
-    let islandInnerColor: chroma.Chroma;
-    let borderColor: chroma.Chroma;
-    let secondaryColor: chroma.Chroma;
+    let globeColor: Color;
+    let islandInnerColor: Color;
+    let borderColor: Color;
+    let secondaryColor: Color;
 
     if (primaryHex.toLowerCase() === "#009b65") {
       globeColor = chroma.rgb(252, 253, 253);
@@ -517,7 +517,8 @@ export function generateTokens(
 // ---------- 12. УТИЛИТЫ ----------
 export function flattenTokens(tokens: ColorTokens): FlatToken[] {
   const result: FlatToken[] = [];
-  const walk = (obj: Record<string, unknown>, prefix: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- recursive walk over nested token object
+  const walk = (obj: any, prefix: string) => {
     for (const key in obj) {
       const val = obj[key];
       if (val && typeof val === "object" && "value" in val && "type" in val) {
