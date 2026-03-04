@@ -204,7 +204,7 @@ const Index = () => {
     return name
       .trim()
       .replace(/\s+/g, "_")
-      .replace(/[^a-zA-Z0-9а-яА-ЯёЁ_\-]/g, "");
+      .replace(/[^a-zA-Z0-9а-яА-ЯёЁ_-]/g, "");
   };
 
   const handleDownload = () => {
@@ -496,7 +496,7 @@ const Index = () => {
           "--island-inner": tokens
             ? getColor(tokens.background["island-inner"])
             : "#EBF8F3",
-        } as any
+        } as React.CSSProperties
       }
     >
       <header className="border-b border-border bg-background px-6 py-4">

@@ -277,7 +277,7 @@ export function generateTokens(
 
   const adaptedStatus = adaptStatusColors(status, algorithm, primary);
 
-  let background: any;
+  let background: ColorTokens["background"];
   let textDerivatives: {
     secondary: chroma.Chroma;
     tertiary: chroma.Chroma;
@@ -430,7 +430,7 @@ export function generateTokens(
   };
 
   // ----- ИКОНКИ -----
-  const icons: any = {
+  const icons: ColorTokens["icons"] = {
     primary: { value: rgb(primary), type: "color" },
     "primary-inverse": {
       value: rgb(chroma(CONSTANTS.ICONS_PRIMARY_INVERSE)),
@@ -439,7 +439,7 @@ export function generateTokens(
   };
 
   // ----- КНОПКИ -----
-  const buttons: any = {
+  const buttons: ColorTokens["buttons"] = {
     primary: {
       "fill-border-default": { value: rgb(btnDefault), type: "color" },
       "fill-border-hover": { value: rgb(btnHover), type: "color" },
@@ -516,7 +516,7 @@ export function generateTokens(
 // ---------- 12. УТИЛИТЫ ----------
 export function flattenTokens(tokens: ColorTokens): FlatToken[] {
   const result: FlatToken[] = [];
-  const walk = (obj: any, prefix: string) => {
+  const walk = (obj: Record<string, unknown>, prefix: string) => {
     for (const key in obj) {
       const val = obj[key];
       if (val && typeof val === "object" && "value" in val && "type" in val) {
@@ -527,8 +527,8 @@ export function flattenTokens(tokens: ColorTokens): FlatToken[] {
             value: val.value,
           });
         }
-      } else if (val && typeof val === "object") {
-        walk(val, prefix ? `${prefix}.${key}` : key);
+      } else if (val && typeof val === "object" && val !== null) {
+        walk(val as Record<string, unknown>, prefix ? `${prefix}.${key}` : key);
       }
     }
   };
@@ -581,12 +581,12 @@ export function setTokenValue(
   path: string,
   newValue: string,
 ): ColorTokens {
-  const clone = JSON.parse(JSON.stringify(tokens));
+  const clone = JSON.parse(JSON.stringify(tokens)) as ColorTokens;
   const parts = path.replace(/^\./, "").split(".");
-  let obj: any = clone;
+  let obj: Record<string, unknown> = clone as unknown as Record<string, unknown>;
   for (let i = 0; i < parts.length - 1; i++) {
-    obj = obj[parts[i]];
+    obj = obj[parts[i]] as Record<string, unknown>;
   }
-  obj[parts[parts.length - 1]].value = newValue;
+  (obj[parts[parts.length - 1]] as { value: string }).value = newValue;
   return clone;
 }
