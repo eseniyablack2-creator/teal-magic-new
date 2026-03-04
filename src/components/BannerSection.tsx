@@ -1,6 +1,7 @@
 import { forwardRef } from "react";
 import { ColorTokens } from "@/lib/colorGenerator";
 import { Upload, X } from "lucide-react";
+import { CurrencyCircleIcon } from "@/components/icons/CurrencyCircleIcon";
 
 interface BannerSectionProps {
   tokens: ColorTokens;
@@ -10,29 +11,12 @@ interface BannerSectionProps {
   onRemove: () => void;
 }
 
-// ----- ИКОНКА ВАЛЮТЫ (ЗВЕЗДА) – размер 4.25rem -----
-const CurrencyIcon = ({
-  color,
-  width = 4.25,
-}: {
-  color: string;
-  width?: number;
-}) => (
-  <svg
-    width={`${width}rem`}
-    height={`${width}rem`}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    style={{ color }}
-  >
-    <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M2 12C2 6.48 6.48 2 12 2s10 4.48 10 10-4.48 10-10 10S2 17.52 2 12Zm12.108-4.55-1.065 3.33c.064.02.128.04.19.061l1.447.452c.204.068.411.132.618.196.208.064.415.128.618.196l.15.047c.39.122.867.27.92.737.045.376-.301.648-.573.844-.09.067-.18.131-.27.195-.091.065-.182.129-.272.196-.15.106-.298.215-.445.324-.146.11-.293.219-.444.324-.181.128-.358.26-.535.392a27.91 27.91 0 0 1-.535.392c-.18.136-.366.272-.55.407-.185.136-.37.271-.55.407-.166.12-.328.24-.49.361-.162.121-.324.242-.49.362-.12.083-.237.17-.354.256-.117.087-.233.174-.354.257-.317.226-.663.452-1.04.21a.73.73 0 0 1-.286-.316.815.815 0 0 1-.045-.422c.02-.14.067-.281.113-.422.024-.07.047-.14.067-.21l.272-.86c.052-.158.101-.316.15-.475.05-.158.098-.316.151-.474.038-.128.08-.257.12-.385.042-.128.084-.256.121-.384.043-.1.072-.2.101-.3-.085-.026-.16-.051-.237-.077-.203-.067-.403-.131-.602-.195l-.603-.196c-.226-.076-.452-.147-.678-.219-.226-.072-.452-.143-.678-.218-.151-.06-.302-.106-.452-.151-.287-.09-.528-.271-.573-.588-.015-.045-.015-.09-.015-.136 0-.405.299-.616.595-.825l.068-.048a112.09 112.09 0 0 0 .829-.603l.247-.178c.289-.207.57-.41.853-.621l1.175-.859c.181-.128.362-.26.543-.392.18-.132.361-.264.542-.392.256-.196.528-.392.8-.587.06-.038.116-.08.172-.121.057-.041.113-.083.174-.12.196-.121.542-.212.859.03.406.316.24.798.24.798Z"
-      fill="currentColor"
-    />
-  </svg>
+// ----- ИКОНКА ВАЛЮТЫ (ЗВЕЗДА) – переиспользуем общий SVG -----
+const BannerCurrencyIcon = ({ color }: { color: string }) => (
+  <CurrencyCircleIcon
+    size={68} // 4.25rem ≈ 68px при базовом шрифте 16px
+    color={color}
+  />
 );
 
 // ----- ПОЛНЫЙ SVG МОНЕТ (ПРОВЕРЕННЫЙ, С ИКОНКАМИ) -----
@@ -1144,10 +1128,7 @@ const CustomizableBanner = forwardRef<
             <CoinsIcon accentColor={getColor(bg.accent)} />
           </div>
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <CurrencyIcon
-              color={getColor(icons["primary-inverse"])}
-              width={4.25}
-            />
+            <BannerCurrencyIcon color={getColor(icons["primary-inverse"])} />
           </div>
         </div>
       </div>
