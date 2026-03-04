@@ -277,7 +277,8 @@ export function generateTokens(
 
   const adaptedStatus = adaptStatusColors(status, algorithm, primary);
 
-  let background: ColorTokens["background"];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- accent-rgb and other dynamic keys assigned after initial object
+  let background: any;
   let textDerivatives: {
     secondary: chroma.Chroma;
     tertiary: chroma.Chroma;

@@ -16,20 +16,22 @@ const pathToCssVar = (path: string): string => "--" + path.replace(/\./g, "-");
 
 const collectCssVariables = (tokens: ColorTokens): Record<string, string> => {
   const result: Record<string, string> = {};
-  const flatten = (obj: Record<string, unknown>, prefix = "") => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- recursive token tree (background.accent-rgb etc.)
+  const flatten = (obj: any, prefix = "") => {
     for (const key in obj) {
       const value = obj[key];
       const fullPath = prefix ? `${prefix}.${key}` : key;
-      if (value && typeof value === "object" && value !== null && "value" in value) {
+      if (value && typeof value === "object" && "value" in value) {
         if (value.type === "boxShadow" && typeof value.value === "object") {
           const shadow = value.value;
           const shadowString = `${shadow.x}px ${shadow.y}px ${shadow.blur}px ${shadow.spread}px ${shadow.color}`;
           result[pathToCssVar(fullPath)] = shadowString;
         } else {
-          result[pathToCssVar(fullPath)] = value.value;
+          result[pathToCssVar(fullPath)] =
+            typeof value.value === "string" ? value.value : String(value.value);
         }
-      } else if (value && typeof value === "object" && value !== null) {
-        flatten(value as Record<string, unknown>, fullPath);
+      } else if (value && typeof value === "object") {
+        flatten(value, fullPath);
       }
     }
   };

@@ -791,11 +791,15 @@ const Index = () => {
                       </div>
                     </div>
 
-                    {/* Ручная коррекция токенов */}
+                    {/* Ручная коррекция токенов (accent-rgb не редактируем — считается от Primary с фиксированной прозрачностью) */}
                     {tokens && (
                       <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
                         <TokenEditor
-                          tokens={flattenTokens(tokens)}
+                          tokens={flattenTokens(tokens).filter(
+                            (t) =>
+                              t.path !== "background.accent-rgb" &&
+                              t.path !== "background.accent-secondary-rgb"
+                          )}
                           onTokenChange={handleTokenChange}
                         />
                       </div>
