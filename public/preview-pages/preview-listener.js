@@ -132,14 +132,16 @@ window.parent.postMessage({ type: 'preview-ready' }, '*');
 
 // Гарантируем единый фон и шрифт Inter во всех превью
 document.body.style.backgroundColor = '#ffffff';
-document.documentElement.style.setProperty('--f-family', "'Inter', sans-serif");
-document.body.style.fontFamily = "var(--f-family, 'Inter', sans-serif)";
+// На уровне root явно задаём Inter (и помечаем как important на случай, если приложение прописывает свою переменную c !important)
+document.documentElement.style.setProperty('--f-family', "'Inter', sans-serif", 'important');
+// Базовый шрифт body — тоже Inter
+document.body.style.fontFamily = "'Inter', sans-serif";
 
 // На всякий случай принудительно переопределяем font-family для всего контента превью
 const forceFontStyle = document.createElement('style');
 forceFontStyle.textContent = `
   body, body * {
-    font-family: var(--f-family, 'Inter', sans-serif) !important;
+    font-family: 'Inter', sans-serif !important;
   }
 `;
 document.head.appendChild(forceFontStyle);
