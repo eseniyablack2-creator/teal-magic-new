@@ -162,28 +162,99 @@ const getColor = (val: { value: string | object }): string => {
 };
 
 // ==============================================
+//   ЧЕРНОВИК НАСТРОЕК В LOCALSTORAGE
+// ==============================================
+
+const DRAFT_STORAGE_KEY = "teal-branding-draft:v1";
+// Храним черновик не больше 2 суток
+const DRAFT_TTL_MS = 2 * 24 * 60 * 60 * 1000;
+
+type BrandingDraft = {
+  primaryColor: string;
+  textPrimaryColor: string;
+  statusColors: StatusColors;
+  algorithm: AlgorithmType;
+  companyName: string;
+  currencyName: string;
+  bannerData?: string;
+  bannerMobileData: string | null;
+  avatarData?: string;
+  currencyIconData?: string;
+  thanksData?: string;
+  thanksLeaderData?: string;
+  logoData?: string;
+  savedAt: number;
+};
+
+const isBrowser = typeof window !== "undefined";
+
+const loadDraftFromStorage = (): BrandingDraft | null => {
+  if (!isBrowser) return null;
+
+  try {
+    const raw = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as BrandingDraft;
+    if (typeof parsed.savedAt !== "number") return null;
+
+    const age = Date.now() - parsed.savedAt;
+    if (age > DRAFT_TTL_MS) {
+      window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+      return null;
+    }
+
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+// ==============================================
 //   ФУНКЦИИ ГЕНЕРАЦИИ СТАНДАРТНЫХ SVG (СИНХРОННЫЕ)
 // ==============================================
 // ... (эти функции уже есть в вашем файле, оставьте их без изменений)
 
 const Index = () => {
-  const [primaryColor, setPrimaryColor] = useState("#009B65");
-  const [textPrimaryColor, setTextPrimaryColor] = useState("#14140F");
-  const [statusColors, setStatusColors] = useState<StatusColors>({
-    ...DEFAULT_STATUS,
-  });
-  const [algorithm, setAlgorithm] = useState<AlgorithmType>("default");
-  const [tokens, setTokens] = useState<ColorTokens | null>(null);
-  const [companyName, setCompanyName] = useState("");
-  const [currencyName, setCurrencyName] = useState("Teal");
+  const draft = loadDraftFromStorage();
 
-  const [bannerData, setBannerData] = useState<string>();
-  const [bannerMobileData, setBannerMobileData] = useState<string | null>(null);
-  const [avatarData, setAvatarData] = useState<string>();
-  const [currencyIconData, setCurrencyIconData] = useState<string>();
-  const [thanksData, setThanksData] = useState<string>();
-  const [thanksLeaderData, setThanksLeaderData] = useState<string>();
-  const [logoData, setLogoData] = useState<string>();
+  const [primaryColor, setPrimaryColor] = useState(
+    draft?.primaryColor ?? "#009B65",
+  );
+  const [textPrimaryColor, setTextPrimaryColor] = useState(
+    draft?.textPrimaryColor ?? "#14140F",
+  );
+  const [statusColors, setStatusColors] = useState<StatusColors>({
+    ...(draft?.statusColors ?? DEFAULT_STATUS),
+  });
+  const [algorithm, setAlgorithm] = useState<AlgorithmType>(
+    draft?.algorithm ?? "default",
+  );
+  const [tokens, setTokens] = useState<ColorTokens | null>(null);
+  const [companyName, setCompanyName] = useState(draft?.companyName ?? "");
+  const [currencyName, setCurrencyName] = useState(
+    draft?.currencyName ?? "Teal",
+  );
+
+  const [bannerData, setBannerData] = useState<string | undefined>(
+    draft?.bannerData,
+  );
+  const [bannerMobileData, setBannerMobileData] = useState<string | null>(
+    draft?.bannerMobileData ?? null,
+  );
+  const [avatarData, setAvatarData] = useState<string | undefined>(
+    draft?.avatarData,
+  );
+  const [currencyIconData, setCurrencyIconData] = useState<string | undefined>(
+    draft?.currencyIconData,
+  );
+  const [thanksData, setThanksData] = useState<string | undefined>(
+    draft?.thanksData,
+  );
+  const [thanksLeaderData, setThanksLeaderData] = useState<string | undefined>(
+    draft?.thanksLeaderData,
+  );
+  const [logoData, setLogoData] = useState<string | undefined>(draft?.logoData);
   const bannerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -195,6 +266,51 @@ const Index = () => {
     );
     setTokens(newTokens);
   }, [primaryColor, textPrimaryColor, statusColors, algorithm]);
+
+  // Сохраняем черновик в localStorage (с TTL на уровне чтения)
+  useEffect(() => {
+    if (!isBrowser) return;
+
+    try {
+      const draftToSave: BrandingDraft = {
+        primaryColor,
+        textPrimaryColor,
+        statusColors,
+        algorithm,
+        companyName,
+        currencyName,
+        bannerData,
+        bannerMobileData,
+        avatarData,
+        currencyIconData,
+        thanksData,
+        thanksLeaderData,
+        logoData,
+        savedAt: Date.now(),
+      };
+
+      window.localStorage.setItem(
+        DRAFT_STORAGE_KEY,
+        JSON.stringify(draftToSave),
+      );
+    } catch {
+      // игнорируем ошибки localStorage, чтобы не ломать UI
+    }
+  }, [
+    primaryColor,
+    textPrimaryColor,
+    statusColors,
+    algorithm,
+    companyName,
+    currencyName,
+    bannerData,
+    bannerMobileData,
+    avatarData,
+    currencyIconData,
+    thanksData,
+    thanksLeaderData,
+    logoData,
+  ]);
 
   const handleTokenChange = useCallback((path: string, newValue: string) => {
     setTokens((prev) => (prev ? setTokenValue(prev, path, newValue) : prev));
@@ -246,6 +362,13 @@ const Index = () => {
     setThanksData(undefined);
     setThanksLeaderData(undefined);
     setLogoData(undefined);
+    if (isBrowser) {
+      try {
+        window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+      } catch {
+        // игнорируем
+      }
+    }
   };
 
   /** Сброс только изменённых пользователем цветов (primary, text, status, algorithm). */
