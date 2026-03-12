@@ -23,7 +23,7 @@ export default function ThanksIconCard({
         <div>
           <p className="text-sm font-medium">Иконка благодарностей</p>
           <p className="text-xs text-muted-foreground">
-            SVG: 24×24px | PNG: 1000×1000px
+            Рекомендуемый размер: SVG 24×24px | PNG 1000×1000px
           </p>
         </div>
         {!fileData ? (

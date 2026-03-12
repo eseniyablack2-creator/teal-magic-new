@@ -1172,7 +1172,7 @@ export default function MobileBannerSection({
         <div>
           <p className="text-sm font-medium">Мобильный баннер</p>
           <p className="text-xs text-muted-foreground">
-            Минимальные размеры 328×364px, макс. 3 МБ
+            Рекомендуемый размер: 328×364px | макс. 5 МБ
           </p>
         </div>
         {!fileData ? (

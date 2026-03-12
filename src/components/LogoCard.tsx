@@ -22,7 +22,9 @@ export default function LogoCard({
       <div className="mb-3 flex items-center justify-between">
         <div>
           <p className="text-sm font-medium">Логотип компании</p>
-          <p className="text-xs text-muted-foreground">SVG, макс 128×40px</p>
+          <p className="text-xs text-muted-foreground">
+            Рекомендуется: SVG до 128×40px или PNG 1024×320px
+          </p>
         </div>
         {!fileData ? (
           <label

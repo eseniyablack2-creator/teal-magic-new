@@ -23,6 +23,7 @@ import BannerSection from "@/components/BannerSection";
 import MobileBannerSection from "@/components/MobileBannerSection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const PlatformPreview = React.lazy(() => import("@/components/PlatformPreview"));
+import { ImageCropDialog } from "@/components/ImageCropDialog";
 
 // Импорты карточек атрибутов
 import AvatarCard from "@/components/AvatarCard";
@@ -39,8 +40,8 @@ import { Download, Package, RotateCcw } from "lucide-react";
 //   КОНСТАНТЫ И ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ЭКСПОРТА
 // ==============================================
 
-// Максимальный размер загружаемых файлов (10 МБ)
-const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024;
+// Максимальный размер загружаемых файлов (5 МБ)
+const MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
 
 // Максимальный целевой размер экспортируемых файлов (3 МБ)
 const MAX_EXPORT_SIZE_BYTES = 3 * 1024 * 1024;
@@ -169,6 +170,10 @@ const DRAFT_STORAGE_KEY = "teal-branding-draft:v1";
 // Храним черновик не больше 2 суток
 const DRAFT_TTL_MS = 2 * 24 * 60 * 60 * 1000;
 
+// Жёсткий лимит на черновик в localStorage (≈4 МБ),
+// чтобы не упираться в ограничения браузера.
+const MAX_DRAFT_BYTES = 4 * 1024 * 1024;
+
 type BrandingDraft = {
   primaryColor: string;
   textPrimaryColor: string;
@@ -187,6 +192,16 @@ type BrandingDraft = {
 };
 
 const isBrowser = typeof window !== "undefined";
+
+const approximateDataUrlSize = (dataUrl?: string): number => {
+  if (!dataUrl) return 0;
+  // длина base64-части строки
+  const parts = dataUrl.split(",");
+  if (parts.length < 2) return 0;
+  const base64 = parts[1];
+  // грубая оценка размера в байтах
+  return Math.floor((base64.length * 3) / 4);
+};
 
 const loadDraftFromStorage = (): BrandingDraft | null => {
   if (!isBrowser) return null;
@@ -257,6 +272,17 @@ const Index = () => {
   const [logoData, setLogoData] = useState<string | undefined>(draft?.logoData);
   const bannerRef = useRef<HTMLDivElement>(null);
 
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [cropAspect, setCropAspect] = useState(1);
+  const [cropTargetKey, setCropTargetKey] = useState<string | null>(null);
+  const [cropOutputWidth, setCropOutputWidth] = useState<number | undefined>(
+    undefined,
+  );
+  const [cropOutputHeight, setCropOutputHeight] = useState<number | undefined>(
+    undefined,
+  );
+
   useEffect(() => {
     const newTokens = generateTokens(
       primaryColor,
@@ -279,6 +305,9 @@ const Index = () => {
         algorithm,
         companyName,
         currencyName,
+        // баннеры могут быть очень тяжёлыми (особенно SVG),
+        // поэтому включаем их в черновик только если общий размер
+        // не превышает безопасный предел.
         bannerData,
         bannerMobileData,
         avatarData,
@@ -289,10 +318,75 @@ const Index = () => {
         savedAt: Date.now(),
       };
 
-      window.localStorage.setItem(
-        DRAFT_STORAGE_KEY,
-        JSON.stringify(draftToSave),
-      );
+      const draftJson = JSON.stringify(draftToSave);
+      const draftBytes = new Blob([draftJson]).size;
+
+      // если общий размер черновика слишком большой,
+      // пробуем поэтапно уменьшить объём:
+      // 1) оставить все поля, кроме самого тяжёлого баннера;
+      // 2) если всё ещё много — отбросить оба баннера;
+      // 3) если и это не помогает — сохранить только критично важные поля.
+      if (draftBytes > MAX_DRAFT_BYTES) {
+        let candidate: BrandingDraft = { ...draftToSave };
+
+        // 1) пробуем выбросить только самый тяжёлый баннер
+        const desktopSize = approximateDataUrlSize(bannerData);
+        const mobileSize = approximateDataUrlSize(bannerMobileData ?? undefined);
+
+        if (desktopSize > 0 || mobileSize > 0) {
+          if (desktopSize >= mobileSize) {
+            candidate.bannerData = undefined;
+          } else {
+            candidate.bannerMobileData = null;
+          }
+
+          const candidateJson = JSON.stringify(candidate);
+          const candidateBytes = new Blob([candidateJson]).size;
+          if (candidateBytes <= MAX_DRAFT_BYTES) {
+            window.localStorage.setItem(DRAFT_STORAGE_KEY, candidateJson);
+            return;
+          }
+        }
+
+        // 2) если всё ещё большой — убираем оба баннера
+        const lighterDraft: BrandingDraft = {
+          ...draftToSave,
+          bannerData: undefined,
+          bannerMobileData: null,
+        };
+        const lighterJson = JSON.stringify(lighterDraft);
+        const lighterBytes = new Blob([lighterJson]).size;
+
+        if (lighterBytes <= MAX_DRAFT_BYTES) {
+          window.localStorage.setItem(DRAFT_STORAGE_KEY, lighterJson);
+          return;
+        }
+
+        // 3) если и так не помещается — сохраняем только критично важные поля
+        const minimalDraft: BrandingDraft = {
+          primaryColor,
+          textPrimaryColor,
+          statusColors,
+          algorithm,
+          companyName,
+          currencyName,
+          bannerData: undefined,
+          bannerMobileData: null,
+          avatarData,
+          currencyIconData,
+          thanksData,
+          thanksLeaderData,
+          logoData,
+          savedAt: Date.now(),
+        };
+        window.localStorage.setItem(
+          DRAFT_STORAGE_KEY,
+          JSON.stringify(minimalDraft),
+        );
+        return;
+      }
+
+      window.localStorage.setItem(DRAFT_STORAGE_KEY, draftJson);
     } catch {
       // игнорируем ошибки localStorage, чтобы не ломать UI
     }
@@ -389,6 +483,74 @@ const Index = () => {
     setBannerMobileData(null);
   };
 
+  const getCropConfigForKey = (
+    key: string,
+  ): { aspect: number; width: number; height: number } => {
+    switch (key) {
+      case "avatar":
+      case "currency":
+      case "thanks":
+      case "thanksLeader":
+        return { aspect: 1, width: 1000, height: 1000 };
+      case "logo":
+        return { aspect: 128 / 40, width: 1024, height: 320 };
+      case "banner":
+        return { aspect: 2400 / 584, width: 2400, height: 584 };
+      case "bannerMobile":
+        return { aspect: 656 / 728, width: 656, height: 728 };
+      default:
+        return { aspect: 1, width: 1000, height: 1000 };
+    }
+  };
+
+  const startCropping = (key: string, dataUrl: string) => {
+    setCropTargetKey(key);
+    const cfg = getCropConfigForKey(key);
+    setCropAspect(cfg.aspect);
+    setCropOutputWidth(cfg.width);
+    setCropOutputHeight(cfg.height);
+    setCropImageSrc(dataUrl);
+    setCropDialogOpen(true);
+  };
+
+  const applyCroppedImage = (croppedDataUrl: string) => {
+    if (!cropTargetKey) return;
+    switch (cropTargetKey) {
+      case "banner":
+        setBannerData(croppedDataUrl);
+        break;
+      case "bannerMobile":
+        setBannerMobileData(croppedDataUrl);
+        break;
+      case "avatar":
+        setAvatarData(croppedDataUrl);
+        break;
+      case "currency":
+        setCurrencyIconData(croppedDataUrl);
+        break;
+      case "thanks":
+        setThanksData(croppedDataUrl);
+        break;
+      case "thanksLeader":
+        setThanksLeaderData(croppedDataUrl);
+        break;
+      case "logo":
+        setLogoData(croppedDataUrl);
+        break;
+    }
+    setCropDialogOpen(false);
+    setCropImageSrc(null);
+    setCropTargetKey(null);
+  };
+
+  const cancelCropping = () => {
+    setCropDialogOpen(false);
+    setCropImageSrc(null);
+    setCropTargetKey(null);
+    setCropOutputWidth(undefined);
+    setCropOutputHeight(undefined);
+  };
+
   const handleFileUpload = (key: string, file: File) => {
     if (!file) return;
     if (file.size > MAX_UPLOAD_SIZE_BYTES) {
@@ -398,28 +560,34 @@ const Index = () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       if (e.target?.result) {
-        switch (key) {
-          case "banner":
-            setBannerData(e.target.result as string);
-            break;
-          case "bannerMobile":
-            setBannerMobileData(e.target.result as string);
-            break;
-          case "avatar":
-            setAvatarData(e.target.result as string);
-            break;
-          case "currency":
-            setCurrencyIconData(e.target.result as string);
-            break;
-          case "thanks":
-            setThanksData(e.target.result as string);
-            break;
-          case "thanksLeader":
-            setThanksLeaderData(e.target.result as string);
-            break;
-          case "logo":
-            setLogoData(e.target.result as string);
-            break;
+        const result = e.target.result as string;
+        // SVG не кропаем, оставляем как есть
+        if (result.startsWith("data:image/svg+xml")) {
+          switch (key) {
+            case "banner":
+              setBannerData(result);
+              break;
+            case "bannerMobile":
+              setBannerMobileData(result);
+              break;
+            case "avatar":
+              setAvatarData(result);
+              break;
+            case "currency":
+              setCurrencyIconData(result);
+              break;
+            case "thanks":
+              setThanksData(result);
+              break;
+            case "thanksLeader":
+              setThanksLeaderData(result);
+              break;
+            case "logo":
+              setLogoData(result);
+              break;
+          }
+        } else {
+          startCropping(key, result);
         }
       }
     };
@@ -513,8 +681,8 @@ const Index = () => {
         data: logoData,
         svgWidth: 128,
         svgHeight: 40,
-        pngWidth: 128,
-        pngHeight: 40,
+        pngWidth: 1024,
+        pngHeight: 320,
         fileNameBase: `logo`,
       },
       {
@@ -622,6 +790,15 @@ const Index = () => {
         } as React.CSSProperties
       }
     >
+      <ImageCropDialog
+        open={cropDialogOpen}
+        imageSrc={cropImageSrc}
+        aspect={cropAspect}
+        outputWidth={cropOutputWidth}
+        outputHeight={cropOutputHeight}
+        onCancel={cancelCropping}
+        onConfirm={applyCroppedImage}
+      />
       <header className="border-b border-border bg-background px-6 py-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col items-start gap-1">
