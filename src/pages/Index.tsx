@@ -262,6 +262,12 @@ const Index = () => {
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [cropAspect, setCropAspect] = useState(1);
   const [cropTargetKey, setCropTargetKey] = useState<string | null>(null);
+  const [cropOutputWidth, setCropOutputWidth] = useState<number | undefined>(
+    undefined,
+  );
+  const [cropOutputHeight, setCropOutputHeight] = useState<number | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     const newTokens = generateTokens(
@@ -395,27 +401,32 @@ const Index = () => {
     setBannerMobileData(null);
   };
 
-  const getAspectForKey = (key: string): number => {
+  const getCropConfigForKey = (
+    key: string,
+  ): { aspect: number; width: number; height: number } => {
     switch (key) {
       case "avatar":
       case "currency":
       case "thanks":
       case "thanksLeader":
-        return 1; // квадратные иконки
+        return { aspect: 1, width: 1000, height: 1000 };
       case "logo":
-        return 128 / 40; // логотип ~ 3.2:1
+        return { aspect: 128 / 40, width: 128, height: 40 };
       case "banner":
-        return 2400 / 584; // баннер desktop
+        return { aspect: 2400 / 584, width: 2400, height: 584 };
       case "bannerMobile":
-        return 656 / 728; // баннер mobile
+        return { aspect: 656 / 728, width: 656, height: 728 };
       default:
-        return 1;
+        return { aspect: 1, width: 1000, height: 1000 };
     }
   };
 
   const startCropping = (key: string, dataUrl: string) => {
     setCropTargetKey(key);
-    setCropAspect(getAspectForKey(key));
+    const cfg = getCropConfigForKey(key);
+    setCropAspect(cfg.aspect);
+    setCropOutputWidth(cfg.width);
+    setCropOutputHeight(cfg.height);
     setCropImageSrc(dataUrl);
     setCropDialogOpen(true);
   };
@@ -454,6 +465,8 @@ const Index = () => {
     setCropDialogOpen(false);
     setCropImageSrc(null);
     setCropTargetKey(null);
+    setCropOutputWidth(undefined);
+    setCropOutputHeight(undefined);
   };
 
   const handleFileUpload = (key: string, file: File) => {
@@ -465,7 +478,35 @@ const Index = () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       if (e.target?.result) {
-        startCropping(key, e.target.result as string);
+        const result = e.target.result as string;
+        // SVG не кропаем, оставляем как есть
+        if (result.startsWith("data:image/svg+xml")) {
+          switch (key) {
+            case "banner":
+              setBannerData(result);
+              break;
+            case "bannerMobile":
+              setBannerMobileData(result);
+              break;
+            case "avatar":
+              setAvatarData(result);
+              break;
+            case "currency":
+              setCurrencyIconData(result);
+              break;
+            case "thanks":
+              setThanksData(result);
+              break;
+            case "thanksLeader":
+              setThanksLeaderData(result);
+              break;
+            case "logo":
+              setLogoData(result);
+              break;
+          }
+        } else {
+          startCropping(key, result);
+        }
       }
     };
     reader.readAsDataURL(file);
@@ -671,6 +712,8 @@ const Index = () => {
         open={cropDialogOpen}
         imageSrc={cropImageSrc}
         aspect={cropAspect}
+        outputWidth={cropOutputWidth}
+        outputHeight={cropOutputHeight}
         onCancel={cancelCropping}
         onConfirm={applyCroppedImage}
       />

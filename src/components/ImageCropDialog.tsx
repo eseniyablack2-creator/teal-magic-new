@@ -10,17 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-type ImageCropDialogProps = {
-  open: boolean;
-  imageSrc: string | null;
-  aspect: number;
-  onCancel: () => void;
-  onConfirm: (croppedDataUrl: string) => void;
-};
-
 const createCroppedImage = async (
   imageSrc: string,
   cropArea: Area,
+  outputWidth?: number,
+  outputHeight?: number,
 ): Promise<string> => {
   const image = new Image();
   image.src = imageSrc;
@@ -30,8 +24,10 @@ const createCroppedImage = async (
   });
 
   const canvas = document.createElement("canvas");
-  canvas.width = cropArea.width;
-  canvas.height = cropArea.height;
+  const targetWidth = outputWidth ?? cropArea.width;
+  const targetHeight = outputHeight ?? cropArea.height;
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
   const ctx = canvas.getContext("2d");
   if (!ctx) {
     throw new Error("Cannot get canvas context");
@@ -45,17 +41,29 @@ const createCroppedImage = async (
     cropArea.height,
     0,
     0,
-    cropArea.width,
-    cropArea.height,
+    targetWidth,
+    targetHeight,
   );
 
   return canvas.toDataURL("image/png");
+};
+
+type ImageCropDialogProps = {
+  open: boolean;
+  imageSrc: string | null;
+  aspect: number;
+  outputWidth?: number;
+  outputHeight?: number;
+  onCancel: () => void;
+  onConfirm: (croppedDataUrl: string) => void;
 };
 
 export const ImageCropDialog: React.FC<ImageCropDialogProps> = ({
   open,
   imageSrc,
   aspect,
+  outputWidth,
+  outputHeight,
   onCancel,
   onConfirm,
 }) => {
@@ -73,7 +81,12 @@ export const ImageCropDialog: React.FC<ImageCropDialogProps> = ({
       return;
     }
     try {
-      const dataUrl = await createCroppedImage(imageSrc, croppedAreaPixels);
+      const dataUrl = await createCroppedImage(
+        imageSrc,
+        croppedAreaPixels,
+        outputWidth,
+        outputHeight,
+      );
       onConfirm(dataUrl);
     } catch (e) {
       console.error("Ошибка кропинга изображения", e);
