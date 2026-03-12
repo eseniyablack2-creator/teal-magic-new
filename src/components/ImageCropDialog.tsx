@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import Cropper, { Area } from "react-easy-crop";
+import Cropper, { Area, MediaSize } from "react-easy-crop";
 
 import {
   Dialog,
@@ -70,10 +70,20 @@ export const ImageCropDialog: React.FC<ImageCropDialogProps> = ({
   const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [isAspectMatched, setIsAspectMatched] = useState(false);
 
   const handleCropComplete = useCallback((_area: Area, areaPixels: Area) => {
     setCroppedAreaPixels(areaPixels);
   }, []);
+
+  const handleMediaLoaded = useCallback(
+    (mediaSize: MediaSize) => {
+      const ratio = mediaSize.width / mediaSize.height;
+      const diff = Math.abs(ratio - aspect);
+      setIsAspectMatched(diff < 0.01);
+    },
+    [aspect],
+  );
 
   const handleConfirm = useCallback(async () => {
     if (!imageSrc || !croppedAreaPixels) {
@@ -107,12 +117,19 @@ export const ImageCropDialog: React.FC<ImageCropDialogProps> = ({
               crop={crop}
               zoom={zoom}
               aspect={aspect}
+              onMediaLoaded={handleMediaLoaded}
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={handleCropComplete}
             />
           ) : null}
         </div>
+        {isAspectMatched && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            Изображение уже в нужных пропорциях. Вы можете просто нажать
+            «Применить», чтобы сохранить его без обрезки.
+          </p>
+        )}
         <DialogFooter className="mt-4 flex justify-between gap-2">
           <div className="flex-1">
             <input

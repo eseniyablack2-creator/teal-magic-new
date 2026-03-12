@@ -25,7 +25,7 @@ export default function ThanksLeaderIconCard({
             Иконка благодарностей (руководитель)
           </p>
           <p className="text-xs text-muted-foreground">
-            SVG: 24×24px | PNG: 1000×1000px
+            Рекомендуемый размер: SVG 24×24px | PNG 1000×1000px
           </p>
         </div>
         {!fileData ? (

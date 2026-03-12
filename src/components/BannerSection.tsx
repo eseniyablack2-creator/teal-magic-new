@@ -1159,7 +1159,7 @@ const BannerSection = forwardRef<HTMLDivElement, BannerSectionProps>(
             <div>
               <p className="text-sm font-medium"> 📌Главный баннер</p>
               <p className="text-xs text-muted-foreground mb-3">
-                Рекомендуемый размер: 1200×292px, макс 3MB
+                Рекомендуемый размер: 1200×292px, макс 5 МБ
               </p>
             </div>
             {!bannerData ? (

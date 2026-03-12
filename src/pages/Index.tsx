@@ -40,8 +40,8 @@ import { Download, Package, RotateCcw } from "lucide-react";
 //   КОНСТАНТЫ И ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ЭКСПОРТА
 // ==============================================
 
-// Максимальный размер загружаемых файлов (10 МБ)
-const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024;
+// Максимальный размер загружаемых файлов (5 МБ)
+const MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
 
 // Максимальный целевой размер экспортируемых файлов (3 МБ)
 const MAX_EXPORT_SIZE_BYTES = 3 * 1024 * 1024;
@@ -170,6 +170,10 @@ const DRAFT_STORAGE_KEY = "teal-branding-draft:v1";
 // Храним черновик не больше 2 суток
 const DRAFT_TTL_MS = 2 * 24 * 60 * 60 * 1000;
 
+// Жёсткий лимит на черновик в localStorage (≈4 МБ),
+// чтобы не упираться в ограничения браузера.
+const MAX_DRAFT_BYTES = 4 * 1024 * 1024;
+
 type BrandingDraft = {
   primaryColor: string;
   textPrimaryColor: string;
@@ -188,6 +192,16 @@ type BrandingDraft = {
 };
 
 const isBrowser = typeof window !== "undefined";
+
+const approximateDataUrlSize = (dataUrl?: string): number => {
+  if (!dataUrl) return 0;
+  // длина base64-части строки
+  const parts = dataUrl.split(",");
+  if (parts.length < 2) return 0;
+  const base64 = parts[1];
+  // грубая оценка размера в байтах
+  return Math.floor((base64.length * 3) / 4);
+};
 
 const loadDraftFromStorage = (): BrandingDraft | null => {
   if (!isBrowser) return null;
@@ -291,6 +305,9 @@ const Index = () => {
         algorithm,
         companyName,
         currencyName,
+        // баннеры могут быть очень тяжёлыми (особенно SVG),
+        // поэтому включаем их в черновик только если общий размер
+        // не превышает безопасный предел.
         bannerData,
         bannerMobileData,
         avatarData,
@@ -301,10 +318,75 @@ const Index = () => {
         savedAt: Date.now(),
       };
 
-      window.localStorage.setItem(
-        DRAFT_STORAGE_KEY,
-        JSON.stringify(draftToSave),
-      );
+      const draftJson = JSON.stringify(draftToSave);
+      const draftBytes = new Blob([draftJson]).size;
+
+      // если общий размер черновика слишком большой,
+      // пробуем поэтапно уменьшить объём:
+      // 1) оставить все поля, кроме самого тяжёлого баннера;
+      // 2) если всё ещё много — отбросить оба баннера;
+      // 3) если и это не помогает — сохранить только критично важные поля.
+      if (draftBytes > MAX_DRAFT_BYTES) {
+        let candidate: BrandingDraft = { ...draftToSave };
+
+        // 1) пробуем выбросить только самый тяжёлый баннер
+        const desktopSize = approximateDataUrlSize(bannerData);
+        const mobileSize = approximateDataUrlSize(bannerMobileData ?? undefined);
+
+        if (desktopSize > 0 || mobileSize > 0) {
+          if (desktopSize >= mobileSize) {
+            candidate.bannerData = undefined;
+          } else {
+            candidate.bannerMobileData = null;
+          }
+
+          const candidateJson = JSON.stringify(candidate);
+          const candidateBytes = new Blob([candidateJson]).size;
+          if (candidateBytes <= MAX_DRAFT_BYTES) {
+            window.localStorage.setItem(DRAFT_STORAGE_KEY, candidateJson);
+            return;
+          }
+        }
+
+        // 2) если всё ещё большой — убираем оба баннера
+        const lighterDraft: BrandingDraft = {
+          ...draftToSave,
+          bannerData: undefined,
+          bannerMobileData: null,
+        };
+        const lighterJson = JSON.stringify(lighterDraft);
+        const lighterBytes = new Blob([lighterJson]).size;
+
+        if (lighterBytes <= MAX_DRAFT_BYTES) {
+          window.localStorage.setItem(DRAFT_STORAGE_KEY, lighterJson);
+          return;
+        }
+
+        // 3) если и так не помещается — сохраняем только критично важные поля
+        const minimalDraft: BrandingDraft = {
+          primaryColor,
+          textPrimaryColor,
+          statusColors,
+          algorithm,
+          companyName,
+          currencyName,
+          bannerData: undefined,
+          bannerMobileData: null,
+          avatarData,
+          currencyIconData,
+          thanksData,
+          thanksLeaderData,
+          logoData,
+          savedAt: Date.now(),
+        };
+        window.localStorage.setItem(
+          DRAFT_STORAGE_KEY,
+          JSON.stringify(minimalDraft),
+        );
+        return;
+      }
+
+      window.localStorage.setItem(DRAFT_STORAGE_KEY, draftJson);
     } catch {
       // игнорируем ошибки localStorage, чтобы не ломать UI
     }
@@ -411,7 +493,7 @@ const Index = () => {
       case "thanksLeader":
         return { aspect: 1, width: 1000, height: 1000 };
       case "logo":
-        return { aspect: 128 / 40, width: 128, height: 40 };
+        return { aspect: 128 / 40, width: 1024, height: 320 };
       case "banner":
         return { aspect: 2400 / 584, width: 2400, height: 584 };
       case "bannerMobile":
@@ -599,8 +681,8 @@ const Index = () => {
         data: logoData,
         svgWidth: 128,
         svgHeight: 40,
-        pngWidth: 128,
-        pngHeight: 40,
+        pngWidth: 1024,
+        pngHeight: 320,
         fileNameBase: `logo`,
       },
       {
