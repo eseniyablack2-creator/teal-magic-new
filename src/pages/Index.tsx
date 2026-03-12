@@ -663,7 +663,7 @@ const Index = () => {
             </svg>
             <div>
               <p className="text-xs font-medium text-foreground">
-                Генератор цветовых токенов
+                Сервис кастомизации платформы
               </p>
             </div>
           </div>
