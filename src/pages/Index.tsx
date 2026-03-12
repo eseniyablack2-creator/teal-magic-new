@@ -23,6 +23,7 @@ import BannerSection from "@/components/BannerSection";
 import MobileBannerSection from "@/components/MobileBannerSection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const PlatformPreview = React.lazy(() => import("@/components/PlatformPreview"));
+import { ImageCropDialog } from "@/components/ImageCropDialog";
 
 // Импорты карточек атрибутов
 import AvatarCard from "@/components/AvatarCard";
@@ -257,6 +258,11 @@ const Index = () => {
   const [logoData, setLogoData] = useState<string | undefined>(draft?.logoData);
   const bannerRef = useRef<HTMLDivElement>(null);
 
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [cropAspect, setCropAspect] = useState(1);
+  const [cropTargetKey, setCropTargetKey] = useState<string | null>(null);
+
   useEffect(() => {
     const newTokens = generateTokens(
       primaryColor,
@@ -389,6 +395,67 @@ const Index = () => {
     setBannerMobileData(null);
   };
 
+  const getAspectForKey = (key: string): number => {
+    switch (key) {
+      case "avatar":
+      case "currency":
+      case "thanks":
+      case "thanksLeader":
+        return 1; // квадратные иконки
+      case "logo":
+        return 128 / 40; // логотип ~ 3.2:1
+      case "banner":
+        return 2400 / 584; // баннер desktop
+      case "bannerMobile":
+        return 656 / 728; // баннер mobile
+      default:
+        return 1;
+    }
+  };
+
+  const startCropping = (key: string, dataUrl: string) => {
+    setCropTargetKey(key);
+    setCropAspect(getAspectForKey(key));
+    setCropImageSrc(dataUrl);
+    setCropDialogOpen(true);
+  };
+
+  const applyCroppedImage = (croppedDataUrl: string) => {
+    if (!cropTargetKey) return;
+    switch (cropTargetKey) {
+      case "banner":
+        setBannerData(croppedDataUrl);
+        break;
+      case "bannerMobile":
+        setBannerMobileData(croppedDataUrl);
+        break;
+      case "avatar":
+        setAvatarData(croppedDataUrl);
+        break;
+      case "currency":
+        setCurrencyIconData(croppedDataUrl);
+        break;
+      case "thanks":
+        setThanksData(croppedDataUrl);
+        break;
+      case "thanksLeader":
+        setThanksLeaderData(croppedDataUrl);
+        break;
+      case "logo":
+        setLogoData(croppedDataUrl);
+        break;
+    }
+    setCropDialogOpen(false);
+    setCropImageSrc(null);
+    setCropTargetKey(null);
+  };
+
+  const cancelCropping = () => {
+    setCropDialogOpen(false);
+    setCropImageSrc(null);
+    setCropTargetKey(null);
+  };
+
   const handleFileUpload = (key: string, file: File) => {
     if (!file) return;
     if (file.size > MAX_UPLOAD_SIZE_BYTES) {
@@ -398,29 +465,7 @@ const Index = () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       if (e.target?.result) {
-        switch (key) {
-          case "banner":
-            setBannerData(e.target.result as string);
-            break;
-          case "bannerMobile":
-            setBannerMobileData(e.target.result as string);
-            break;
-          case "avatar":
-            setAvatarData(e.target.result as string);
-            break;
-          case "currency":
-            setCurrencyIconData(e.target.result as string);
-            break;
-          case "thanks":
-            setThanksData(e.target.result as string);
-            break;
-          case "thanksLeader":
-            setThanksLeaderData(e.target.result as string);
-            break;
-          case "logo":
-            setLogoData(e.target.result as string);
-            break;
-        }
+        startCropping(key, e.target.result as string);
       }
     };
     reader.readAsDataURL(file);
@@ -622,6 +667,13 @@ const Index = () => {
         } as React.CSSProperties
       }
     >
+      <ImageCropDialog
+        open={cropDialogOpen}
+        imageSrc={cropImageSrc}
+        aspect={cropAspect}
+        onCancel={cancelCropping}
+        onConfirm={applyCroppedImage}
+      />
       <header className="border-b border-border bg-background px-6 py-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col items-start gap-1">
