@@ -18,7 +18,7 @@ export default function TokenEditor({ tokens, onTokenChange }: Props) {
 
   return (
     <div className="space-y-1">
-      <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+      <h3 className="mb-2 text-sm font-semibold text-foreground">
         Ручная коррекция токенов
       </h3>
       {Object.entries(groups).map(([group, items]) => (

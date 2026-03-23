@@ -7,6 +7,7 @@ interface BannerSectionProps {
   tokens: ColorTokens;
   bannerData?: string;
   currencyName?: string;
+  currencyIconData?: string;
   onUpload: (file: File) => void;
   onRemove: () => void;
 }
@@ -1081,8 +1082,8 @@ function CoinsIcon({ accentColor }: { accentColor: string }) {
 // ----- ДЕФОЛТНЫЙ БАННЕР С REF -----
 const CustomizableBanner = forwardRef<
   HTMLDivElement,
-  { tokens: ColorTokens; currencyName?: string }
->(({ tokens, currencyName }, ref) => {
+  { tokens: ColorTokens; currencyName?: string; currencyIconData?: string }
+>(({ tokens, currencyName, currencyIconData }, ref) => {
     const bg = tokens.background;
     const txt = tokens.text;
     const icons = tokens.icons;
@@ -1128,7 +1129,15 @@ const CustomizableBanner = forwardRef<
             <CoinsIcon accentColor={getColor(bg.accent)} />
           </div>
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <BannerCurrencyIcon color={getColor(icons["primary-inverse"])} />
+            {currencyIconData ? (
+              <img
+                src={currencyIconData}
+                alt="Иконка валюты"
+                className="h-[68px] w-[68px] object-contain"
+              />
+            ) : (
+              <BannerCurrencyIcon color={getColor(icons["primary-inverse"])} />
+            )}
           </div>
         </div>
       </div>
@@ -1140,7 +1149,7 @@ CustomizableBanner.displayName = "CustomizableBanner";
 
 // ----- ОСНОВНОЙ КОМПОНЕНТ БАННЕРА -----
 const BannerSection = forwardRef<HTMLDivElement, BannerSectionProps>(
-  ({ tokens, bannerData, currencyName, onUpload, onRemove }, ref) => {
+  ({ tokens, bannerData, currencyName, currencyIconData, onUpload, onRemove }, ref) => {
     const bg = tokens.background;
     const getColor = (val: { value: string | object }): string => {
       return typeof val.value === "string" ? val.value : "transparent";
@@ -1180,6 +1189,7 @@ const BannerSection = forwardRef<HTMLDivElement, BannerSectionProps>(
               </button>
             )}
             <input
+              key={bannerData ? "uploaded" : "empty"}
               id="upload-banner"
               type="file"
               accept="image/png, image/jpeg, image/jpg, image/svg+xml"
@@ -1187,6 +1197,8 @@ const BannerSection = forwardRef<HTMLDivElement, BannerSectionProps>(
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) onUpload(file);
+                // Позволяет повторно выбрать тот же файл без перезагрузки страницы
+                e.currentTarget.value = "";
               }}
             />
           </div>
@@ -1202,7 +1214,12 @@ const BannerSection = forwardRef<HTMLDivElement, BannerSectionProps>(
               />
             </div>
           ) : (
-            <CustomizableBanner ref={ref} tokens={tokens} currencyName={currencyName} />
+            <CustomizableBanner
+              ref={ref}
+              tokens={tokens}
+              currencyName={currencyName}
+              currencyIconData={currencyIconData}
+            />
           )}
         </div>
       </div>

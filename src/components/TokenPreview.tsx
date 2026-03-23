@@ -1,12 +1,13 @@
 import { ColorTokens } from "@/lib/colorGenerator";
 import { RotateCcw } from "lucide-react";
-
+import { useState } from "react";
 interface Props {
   tokens: ColorTokens;
   onReset: () => void;
 }
 
-function getColor(val: { value: string | object }): string {
+function getColor(val?: { value: string | object }): string {
+  if (!val || !val.value) return "transparent";
   return typeof val.value === "string" ? val.value : "transparent";
 }
 
@@ -57,23 +58,79 @@ export default function TokenPreview({ tokens, onReset }: Props) {
   const icons = tokens.icons;
   const status = tokens.status;
 
+  const [buttonStates, setButtonStates] = useState<
+    Record<string, "default" | "hover" | "active">
+  >({
+    primary: "default",
+    outline: "default",
+    inverse: "default",
+  });
+
+  const getButtonStyle = (type: "primary" | "outline" | "inverse") => {
+    const state = buttonStates[type];
+    let key: string;
+    if (state === "active") {
+      key =
+        type === "primary"
+          ? "fill-border-active"
+          : type === "outline"
+            ? "border-text-active"
+            : "text-active";
+    } else if (state === "hover") {
+      key =
+        type === "primary"
+          ? "fill-border-hover"
+          : type === "outline"
+            ? "border-text-hover"
+            : "text-hover";
+    } else {
+      key =
+        type === "primary"
+          ? "fill-border-default"
+          : type === "outline"
+            ? "border-text-default"
+            : "text-default";
+    }
+
+    if (type === "primary") {
+      return {
+        background: getColor(btn.primary[key as keyof typeof btn.primary]),
+        color: getColor(btn.primary.text),
+      };
+    }
+    if (type === "outline") {
+      return {
+        background: getColor(btn.outline.fill),
+        borderColor: getColor(btn.outline[key as keyof typeof btn.outline]),
+        color: getColor(btn.outline[key as keyof typeof btn.outline]),
+      };
+    }
+    return {
+      background: getColor(btn.inverse.fill),
+      color: getColor(btn.inverse[key as keyof typeof btn.inverse]),
+    };
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Только кнопка "Сбросить" */}
-      <div className="flex gap-3">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-foreground">
+          Кастомизация цветов
+        </h2>
         <button
           onClick={onReset}
-          className="flex items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-medium transition-colors hover:bg-gray-50"
+          className="flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-gray-50"
           style={{
             borderColor: getColor(bg.border),
             color: getColor(txt.primary),
           }}
         >
-          <RotateCcw size={16} /> Сбросить
+          <RotateCcw size={14} /> Сбросить цвета
         </button>
       </div>
 
-      <Section title="Фоны">
+      <div className="rounded-xl border border-border bg-background p-4">
+        <h3 className="mb-3 text-base font-semibold text-foreground">Фоны</h3>
         <div className="grid grid-cols-2 gap-3">
           <Swatch label="Globe" color={getColor(bg.globe)} />
           <Swatch label="Island" color={getColor(bg.island)} border />
@@ -82,198 +139,99 @@ export default function TokenPreview({ tokens, onReset }: Props) {
           <Swatch label="Border" color={getColor(bg.border)} />
           <Swatch label="Modal" color={getColor(bg.modal)} />
         </div>
-      </Section>
+      </div>
 
-      <Section title="Кнопки">
-        <div className="space-y-4">
-          <div>
-            <p className="mb-2 text-xs font-medium uppercase tracking-wider opacity-60">
-              Primary
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {(
-                [
-                  "fill-border-default",
-                  "fill-border-hover",
-                  "fill-border-active",
-                  "fill-border-disabled",
-                ] as const
-              ).map((key) => (
-                <button
-                  key={key}
-                  className="rounded-lg px-4 py-2 text-sm font-medium"
-                  style={{
-                    background: getColor(btn.primary[key]),
-                    color: getColor(btn.primary.text),
-                  }}
-                >
-                  {key.replace("fill-border-", "")}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="mb-2 text-xs font-medium uppercase tracking-wider opacity-60">
-              Outline
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {(
-                [
-                  "border-text-default",
-                  "border-text-hover",
-                  "border-text-active",
-                  "border-text-disabled",
-                ] as const
-              ).map((key) => (
-                <button
-                  key={key}
-                  className="rounded-lg border-2 px-4 py-2 text-sm font-medium"
-                  style={{
-                    background: getColor(btn.outline.fill),
-                    borderColor: getColor(btn.outline[key]),
-                    color: getColor(btn.outline[key]),
-                  }}
-                >
-                  {key.replace("border-text-", "")}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="mb-2 text-xs font-medium uppercase tracking-wider opacity-60">
-              Inverse
-            </p>
-            <div
-              className="flex flex-wrap gap-2 rounded-lg p-3"
-              style={{ background: getColor(bg.accent) }}
-            >
-              {(
-                [
-                  "text-default",
-                  "text-hover",
-                  "text-active",
-                  "text-disabled",
-                ] as const
-              ).map((key) => (
-                <button
-                  key={key}
-                  className="rounded-lg px-4 py-2 text-sm font-medium"
-                  style={{
-                    background: getColor(btn.inverse.fill),
-                    color: getColor(btn.inverse[key]),
-                  }}
-                >
-                  {key.replace("text-", "")}
-                </button>
-              ))}
+      <div className="rounded-xl border border-border bg-background p-4">
+        <h3 className="mb-4 text-base font-semibold text-foreground">Кнопки</h3>
+        <div className="mb-4">
+          <p className="mb-2 text-xs font-medium text-muted-foreground">Primary</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <button className="h-9 min-w-[80px] rounded-md px-4 text-sm font-medium" style={{ background: getColor(btn.primary["fill-border-default"]), color: getColor(btn.primary.text) }}>Default</button>
+            <button className="h-9 min-w-[80px] rounded-md px-4 text-sm font-medium" style={{ background: getColor(btn.primary["fill-border-hover"]), color: getColor(btn.primary.text) }}>Hover</button>
+            <button className="h-9 min-w-[80px] rounded-md px-4 text-sm font-medium" style={{ background: getColor(btn.primary["fill-border-active"]), color: getColor(btn.primary.text) }}>Active</button>
+            <button className="h-9 min-w-[80px] rounded-md px-4 text-sm font-medium opacity-50" style={{ background: getColor(btn.primary["fill-border-disabled"]), color: getColor(btn.primary.text) }}>Disabled</button>
+            <div className="ml-4 flex items-center gap-2 border-l border-border pl-4">
+              <button className="h-9 min-w-[120px] rounded-md px-4 text-sm font-medium transition-colors" style={getButtonStyle("primary")} onMouseEnter={() => setButtonStates((prev) => ({ ...prev, primary: "hover" }))} onMouseLeave={() => setButtonStates((prev) => ({ ...prev, primary: "default" }))} onMouseDown={() => setButtonStates((prev) => ({ ...prev, primary: "active" }))} onMouseUp={() => setButtonStates((prev) => ({ ...prev, primary: "hover" }))}>Интерактивный пример кнопки</button>
+              <span className="min-w-[90px] text-xs text-muted-foreground">{buttonStates.primary === "default" ? "По умолчанию" : buttonStates.primary === "hover" ? "При наведении" : "При нажатии"}</span>
             </div>
           </div>
         </div>
-      </Section>
-
-      <Section title="Текст">
-        <div
-          className="space-y-2 rounded-lg p-4"
-          style={{ background: getColor(bg.island) }}
-        >
-          <p
-            style={{ color: getColor(txt.primary) }}
-            className="text-base font-semibold"
-          >
-            Primary text — Основной текст
-          </p>
-          <p style={{ color: getColor(txt.secondary) }} className="text-sm">
-            Secondary text — Дополнительный текст
-          </p>
-          <p style={{ color: getColor(txt.teritary) }} className="text-sm">
-            Tertiary text — Третичный текст
-          </p>
-          <a
-            href="#"
-            style={{ color: getColor(txt.link) }}
-            className="text-sm underline"
-          >
-            Link — Ссылка
-          </a>
-        </div>
-        <div
-          className="mt-3 space-y-2 rounded-lg p-4"
-          style={{ background: getColor(bg.accent) }}
-        >
-          <p
-            style={{
-              color: getColor(txt["primary-inverse"]),
-              textShadow: "0 1px 2px rgba(0,0,0,0.2)",
-            }}
-            className="text-base font-semibold"
-          >
-            Primary inverse
-          </p>
-          <p
-            style={{ color: getColor(txt["secondary-inverse"]) }}
-            className="text-sm"
-          >
-            Secondary inverse
-          </p>
-          <p
-            style={{ color: getColor(txt["teritary-inverse"]) }}
-            className="text-sm"
-          >
-            Tertiary inverse
-          </p>
-        </div>
-      </Section>
-
-      <Section title="Иконки">
-        <div className="flex gap-4">
-          <div
-            className="flex flex-col items-center gap-1 rounded-lg p-3"
-            style={{ background: getColor(bg.island) }}
-          >
-            <IconStar color={getColor(icons.primary)} />
-            <IconHeart color={getColor(icons.primary)} />
-            <span className="text-xs opacity-60">Primary</span>
-          </div>
-          <div
-            className="flex flex-col items-center gap-1 rounded-lg p-3"
-            style={{ background: getColor(bg.accent) }}
-          >
-            <IconStar color={getColor(icons["primary-inverse"])} />
-            <IconHeart color={getColor(icons["primary-inverse"])} />
-            <span
-              className="text-xs"
-              style={{ color: getColor(txt["primary-inverse"]) }}
-            >
-              Inverse
-            </span>
+        <div className="mb-4">
+          <p className="mb-2 text-xs font-medium text-muted-foreground">Outline</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <button className="h-9 min-w-[80px] rounded-md border px-4 text-sm font-medium" style={{ background: getColor(btn.outline.fill), borderColor: getColor(btn.outline["border-text-default"]), color: getColor(btn.outline["border-text-default"]) }}>Default</button>
+            <button className="h-9 min-w-[80px] rounded-md border px-4 text-sm font-medium" style={{ background: getColor(btn.outline.fill), borderColor: getColor(btn.outline["border-text-hover"]), color: getColor(btn.outline["border-text-hover"]) }}>Hover</button>
+            <button className="h-9 min-w-[80px] rounded-md border px-4 text-sm font-medium" style={{ background: getColor(btn.outline.fill), borderColor: getColor(btn.outline["border-text-active"]), color: getColor(btn.outline["border-text-active"]) }}>Active</button>
+            <button className="h-9 min-w-[80px] rounded-md border px-4 text-sm font-medium opacity-50" style={{ background: getColor(btn.outline.fill), borderColor: getColor(btn.outline["border-text-disabled"]), color: getColor(btn.outline["border-text-disabled"]) }}>Disabled</button>
+            <div className="ml-4 flex items-center gap-2 border-l border-border pl-4">
+              <button className="h-9 min-w-[120px] rounded-md border px-4 text-sm font-medium transition-colors" style={getButtonStyle("outline")} onMouseEnter={() => setButtonStates((prev) => ({ ...prev, outline: "hover" }))} onMouseLeave={() => setButtonStates((prev) => ({ ...prev, outline: "default" }))} onMouseDown={() => setButtonStates((prev) => ({ ...prev, outline: "active" }))} onMouseUp={() => setButtonStates((prev) => ({ ...prev, outline: "hover" }))}>Интерактивный пример кнопки</button>
+              <span className="min-w-[90px] text-xs text-muted-foreground">{buttonStates.outline === "default" ? "По умолчанию" : buttonStates.outline === "hover" ? "При наведении" : "При нажатии"}</span>
+            </div>
           </div>
         </div>
-      </Section>
-
-      <Section title="Статусы">
-        <div className="flex flex-wrap gap-3">
-          <StatusBadge label="Warning" color={getColor(status.warning)} />
-          <StatusBadge label="Danger" color={getColor(status.danger)} />
-          <StatusBadge label="Success" color={getColor(status.success)} />
+        <div>
+          <p className="mb-2 text-xs font-medium text-muted-foreground">Inverse</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <button className="h-9 min-w-[80px] rounded-md px-4 text-sm font-medium" style={{ background: getColor(btn.inverse.fill), color: getColor(btn.inverse["text-default"]) }}>Default</button>
+            <button className="h-9 min-w-[80px] rounded-md px-4 text-sm font-medium" style={{ background: getColor(btn.inverse.fill), color: getColor(btn.inverse["text-hover"]) }}>Hover</button>
+            <button className="h-9 min-w-[80px] rounded-md px-4 text-sm font-medium" style={{ background: getColor(btn.inverse.fill), color: getColor(btn.inverse["text-active"]) }}>Active</button>
+            <button className="h-9 min-w-[80px] rounded-md px-4 text-sm font-medium opacity-50" style={{ background: getColor(btn.inverse.fill), color: getColor(btn.inverse["text-disabled"]) }}>Disabled</button>
+            <div className="ml-4 flex items-center gap-2 border-l border-border pl-4">
+              <button className="h-9 min-w-[120px] rounded-md px-4 text-sm font-medium transition-colors" style={getButtonStyle("inverse")} onMouseEnter={() => setButtonStates((prev) => ({ ...prev, inverse: "hover" }))} onMouseLeave={() => setButtonStates((prev) => ({ ...prev, inverse: "default" }))} onMouseDown={() => setButtonStates((prev) => ({ ...prev, inverse: "active" }))} onMouseUp={() => setButtonStates((prev) => ({ ...prev, inverse: "hover" }))}>Интерактивный пример кнопки</button>
+              <span className="min-w-[90px] text-xs text-muted-foreground">{buttonStates.inverse === "default" ? "По умолчанию" : buttonStates.inverse === "hover" ? "При наведении" : "При нажатии"}</span>
+            </div>
+          </div>
         </div>
-      </Section>
-    </div>
-  );
-}
+      </div>
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-        {title}
-      </h3>
-      {children}
+      <div className="rounded-xl border border-border bg-background p-4">
+        <h3 className="mb-3 text-base font-semibold text-foreground">Текст</h3>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="space-y-2 rounded-lg p-4" style={{ background: getColor(bg.island) }}>
+            <p className="text-xs font-medium text-muted-foreground">Primary</p>
+            <p style={{ color: getColor(txt.primary) }} className="text-sm font-medium">Основной текст</p>
+            <p style={{ color: getColor(txt.secondary) }} className="text-sm">Дополнительный текст</p>
+            <p style={{ color: getColor(txt.teritary) }} className="text-sm">Третичный текст</p>
+            <a href="#" style={{ color: getColor(txt.link) }} className="text-sm underline">Ссылка</a>
+          </div>
+          <div className="space-y-2 rounded-lg p-4" style={{ background: getColor(bg.accent) }}>
+            <p className="text-xs font-medium" style={{ color: getColor(txt["primary-inverse"]) }}>Inverse</p>
+            <p style={{ color: getColor(txt["primary-inverse"]) }} className="text-sm font-medium">Основной текст</p>
+            <p style={{ color: getColor(txt["secondary-inverse"]) }} className="text-sm">Дополнительный текст</p>
+            <p style={{ color: getColor(txt["teritary-inverse"]) }} className="text-sm">Третичный текст</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-4">
+        <div className="flex-1 rounded-xl border border-border bg-background p-4">
+          <h3 className="mb-3 text-base font-semibold text-foreground">Иконки</h3>
+          <div className="flex gap-6">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-medium opacity-60">Primary</span>
+              <div className="flex items-center gap-1 rounded-lg p-1.5" style={{ background: getColor(bg.island) }}>
+                <IconStar color={getColor(icons.primary)} />
+                <IconHeart color={getColor(icons.primary)} />
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-medium opacity-60">Inverse</span>
+              <div className="flex items-center gap-1 rounded-lg p-3" style={{ background: getColor(bg.accent) }}>
+                <IconStar color={getColor(icons["primary-inverse"])} />
+                <IconHeart color={getColor(icons["primary-inverse"])} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 rounded-xl border border-border bg-background p-4">
+          <h3 className="mb-6 text-base font-semibold text-foreground">Статусы</h3>
+          <div className="flex flex-wrap items-center gap-3">
+            <StatusBadge label="Warning" color={getColor(status.warning)} />
+            <StatusBadge label="Danger" color={getColor(status.danger)} />
+            <StatusBadge label="Success" color={getColor(status.success)} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

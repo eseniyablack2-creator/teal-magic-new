@@ -5,6 +5,7 @@ interface MobileBannerSectionProps {
   tokens: ColorTokens;
   fileData?: string;
   currencyName?: string;
+  currencyIconData?: string;
   onUpload: (key: string, file: File) => void;
   onRemove: (key: string) => void;
 }
@@ -1102,9 +1103,11 @@ function CoinsIcon({ accentColor }: { accentColor: string }) {
 const MobileCustomizableBanner = ({
   tokens,
   currencyName,
+  currencyIconData,
 }: {
   tokens: ColorTokens;
   currencyName?: string;
+  currencyIconData?: string;
 }) => {
   const bg = tokens.background;
   const txt = tokens.text;
@@ -1146,10 +1149,18 @@ const MobileCustomizableBanner = ({
           <CoinsIcon accentColor={getColor(bg.accent)} />
         </div>
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          <CurrencyIcon
-            color={getColor(icons["primary-inverse"])}
-            width={3.5}
-          />
+          {currencyIconData ? (
+            <img
+              src={currencyIconData}
+              alt="Иконка валюты"
+              className="h-14 w-14 object-contain"
+            />
+          ) : (
+            <CurrencyIcon
+              color={getColor(icons["primary-inverse"])}
+              width={3.5}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -1161,14 +1172,15 @@ export default function MobileBannerSection({
   tokens,
   fileData,
   currencyName,
+  currencyIconData,
   onUpload,
   onRemove,
 }: MobileBannerSectionProps) {
   const assetKey = "bannerMobile";
 
   return (
-    <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
-      <div className="mb-3 flex items-center justify-between">
+    <div className="flex h-full flex-col rounded-xl border border-border bg-background p-4 shadow-sm">
+      <div className="mb-4 flex items-start justify-between">
         <div>
           <p className="text-sm font-medium">Мобильный баннер</p>
           <p className="text-xs text-muted-foreground">
@@ -1206,21 +1218,22 @@ export default function MobileBannerSection({
         />
       </div>
 
-      <div className="flex justify-center">
-        {fileData ? (
-          <div
-            className="flex items-center justify-center overflow-hidden rounded-lg border border-border/50 bg-muted/30"
-            style={{ width: 328, height: 364 }}
-          >
+      <div className="flex flex-1 items-end justify-center">
+        <div className="flex w-full max-w-[328px] aspect-[328/364] items-center justify-center overflow-hidden rounded-lg border border-border/50 bg-muted/30">
+          {fileData ? (
             <img
               src={fileData}
               alt="Мобильный баннер"
-              className="h-full w-full object-cover rounded-lg"
+              className="h-full w-full rounded-lg object-cover"
             />
-          </div>
-        ) : (
-          <MobileCustomizableBanner tokens={tokens} currencyName={currencyName} />
-        )}
+          ) : (
+            <MobileCustomizableBanner
+              tokens={tokens}
+              currencyName={currencyName}
+              currencyIconData={currencyIconData}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

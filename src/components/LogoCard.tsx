@@ -18,7 +18,7 @@ export default function LogoCard({
   const assetKey = "logo";
 
   return (
-    <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
+    <div className="min-h-[132px] rounded-xl border border-border bg-background p-4 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
         <div>
           <p className="text-sm font-medium">Логотип компании</p>
@@ -56,7 +56,7 @@ export default function LogoCard({
       </div>
 
       {/* Превью: ограничено по ширине/высоте, с сохранением пропорций */}
-      <div className="flex items-center gap-3">
+      <div className="flex min-h-12 items-center gap-3">
         {fileData ? (
           <>
             <div

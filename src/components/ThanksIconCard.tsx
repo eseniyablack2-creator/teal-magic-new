@@ -18,7 +18,7 @@ export default function ThanksIconCard({
   const assetKey = "thanks";
 
   return (
-    <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
+    <div className="min-h-[132px] rounded-xl border border-border bg-background p-4 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
         <div>
           <p className="text-sm font-medium">Иконка благодарностей</p>
@@ -56,7 +56,7 @@ export default function ThanksIconCard({
       </div>
 
       {/* Превью: всегда 48×48px */}
-      <div className="flex items-center gap-3">
+      <div className="flex min-h-12 items-center gap-3">
         {fileData ? (
           <>
             <div

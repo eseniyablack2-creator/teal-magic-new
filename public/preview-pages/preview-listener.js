@@ -119,6 +119,10 @@ window.addEventListener('message', (event) => {
 
     replaceWithImage('[data-testid="logo"]', assets.logo, { objectFit: 'contain' });
     replaceWithImage('[data-testid="company-avatar"]', assets.avatar, { objectFit: 'cover' });
+    // Иконка валюты внутри баннера (центральная иконка поверх фона монет)
+    // На некоторых страницах у нее нет data-testid="currency-icon",
+    // поэтому дополнительно заменяем 24x24 SVG внутри блока баннера.
+    replaceWithImage('[data-testid="banner"] svg[viewBox="0 0 24 24"]', assets.currencyIcon, { objectFit: 'contain' });
     replaceWithImage('[data-testid="currency-icon"]', assets.currencyIcon, { objectFit: 'contain' });
     replaceWithImage('[data-testid="thanks-icon"]', assets.thanksIcon, { objectFit: 'contain' });
     replaceWithImage('[data-testid="thanks-leader-icon"]', assets.thanksLeaderIcon, { objectFit: 'contain' });

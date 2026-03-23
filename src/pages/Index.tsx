@@ -95,6 +95,11 @@ const resizeImageBlob = async (
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Could not get canvas context");
 
+  // Улучшаем качество ресайза для растровых иконок.
+  ctx.imageSmoothingEnabled = true;
+  // @ts-expect-error - поддержка imageSmoothingQuality зависит от браузера
+  ctx.imageSmoothingQuality = "high";
+
   const scale = Math.min(targetWidth / img.width, targetHeight / img.height);
   const w = img.width * scale;
   const h = img.height * scale;
@@ -122,13 +127,21 @@ const ensurePngUnderLimit = async (
   let height = targetHeight;
   let result = await resizeImageBlob(sourceBlob, width, height);
 
+  // Чтобы не попасть в "застревание" из-за шага округления,
+  // ограничим количество итераций.
+  let attempts = 0;
+  const maxAttempts = 30;
+
   while (
     result.size > MAX_EXPORT_SIZE_BYTES &&
     width > minWidth &&
     height > minHeight
   ) {
-    width = Math.floor(width * 0.9);
-    height = Math.floor(height * 0.9);
+    attempts += 1;
+    if (attempts > maxAttempts) break;
+    // Уменьшаем размер меньшими шагами, чтобы сохранить резкость.
+    width = Math.floor(width * 0.97);
+    height = Math.floor(height * 0.97);
     result = await resizeImageBlob(sourceBlob, width, height);
   }
 
@@ -781,9 +794,10 @@ const Index = () => {
 
   return (
     <div
-      className="min-h-screen bg-muted/30"
+      className="min-h-screen"
       style={
         {
+          backgroundColor: "#F3F5F7",
           "--island-inner": tokens
             ? getColor(tokens.background["island-inner"])
             : "#EBF8F3",
@@ -877,9 +891,19 @@ const Index = () => {
           </div>
         ) : (
           <Tabs defaultValue="customize" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-muted">
-              <TabsTrigger value="customize">Кастомизация</TabsTrigger>
-              <TabsTrigger value="preview">Превью платформы</TabsTrigger>
+            <TabsList className="grid h-auto w-full grid-cols-2 rounded-xl border border-border bg-background p-1">
+              <TabsTrigger
+                value="customize"
+                className="rounded-lg text-sm font-medium text-foreground data-[state=active]:bg-primary data-[state=active]:text-white"
+              >
+                Кастомизация
+              </TabsTrigger>
+              <TabsTrigger
+                value="preview"
+                className="rounded-lg text-sm font-medium text-foreground data-[state=active]:bg-primary data-[state=active]:text-white"
+              >
+                Превью платформы
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="customize" className="mt-6">
@@ -927,253 +951,80 @@ const Index = () => {
                   tokens={tokens}
                   bannerData={bannerData}
                   currencyName={currencyName}
+                  currencyIconData={currencyIconData}
                   onUpload={(file) => handleFileUpload("banner", file)}
                   onRemove={() => setBannerData(undefined)}
                 />
                 <div className="flex flex-col gap-6 lg:flex-row">
-                  {/* Левая панель — управление */}
-                  <div className="w-full space-y-6 lg:w-80 lg:shrink-0">
-                    {/* Primary цвет */}
-                    <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
-                      <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                        Primary цвет
-                      </h2>
-                      <div className="flex items-center gap-3">
-                        {/* Цветной квадрат 32x32 с границей и скруглением */}
-                        <div className="relative h-8 w-8 flex-shrink-0">
-                          <div
-                            className="absolute inset-0 rounded-lg border border-border/50"
-                            style={{ backgroundColor: primaryColor }}
-                          />
-                          <input
-                            type="color"
-                            value={primaryColor}
-                            onChange={(e) => setPrimaryColor(e.target.value)}
-                            className="absolute inset-0 opacity-0 cursor-pointer"
-                          />
-                        </div>
-                        {/* Текстовый инпут такой же высоты 32px */}
-                        <input
-                          type="text"
-                          value={primaryColor.toUpperCase()}
-                          onChange={handleHexChange(
-                            setPrimaryColor,
-                            primaryColor,
-                          )}
-                          onPaste={handleHexPaste(setPrimaryColor)}
-                          className="w-full h-8 rounded-lg border border-border bg-background px-3 py-0 font-mono text-sm text-foreground"
-                          placeholder="#009B65"
-                        />
-                      </div>
+                  {/* Левая панель — контент */}
+                  <div className="min-w-0 flex-1 space-y-6">
+                    <div className="rounded-xl border border-border bg-background p-6 shadow-sm">
+                      <TokenPreview tokens={tokens} onReset={handleResetColors} />
                     </div>
 
-                    {/* Цвет основного текста */}
-                    <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
-                      <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                        Цвет текста (text.primary)
-                      </h2>
-                      <div className="flex items-center gap-3">
-                        <div className="relative h-8 w-8 flex-shrink-0">
-                          <div
-                            className="absolute inset-0 rounded-lg border border-border/50"
-                            style={{ backgroundColor: textPrimaryColor }}
-                          />
-                          <input
-                            type="color"
-                            value={textPrimaryColor}
-                            onChange={(e) =>
-                              setTextPrimaryColor(e.target.value)
-                            }
-                            className="absolute inset-0 opacity-0 cursor-pointer"
-                          />
-                        </div>
-                        <input
-                          type="text"
-                          value={textPrimaryColor.toUpperCase()}
-                          onChange={handleHexChange(
-                            setTextPrimaryColor,
-                            textPrimaryColor,
-                          )}
-                          onPaste={handleHexPaste(setTextPrimaryColor)}
-                          className="w-full h-8 rounded-lg border border-border bg-background px-3 py-0 font-mono text-sm text-foreground"
-                          placeholder="#14140F"
-                        />
-                      </div>
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        От него строятся вторичный/третичный текст, граница,
-                        модальное окно и инверсные цвета.
-                      </p>
-                    </div>
-
-                    {/* Статусные цвета */}
-                    <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
-                      <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                        Статусные цвета
-                      </h2>
-                      <div className="space-y-3">
-                        {(["warning", "danger", "success"] as const).map(
-                          (key) => {
-                            const setStatusColor = (value: string) =>
-                              setStatusColors((prev) => ({
-                                ...prev,
-                                [key]: value,
-                              }));
-                            const color = statusColors[key];
-                            return (
-                              <div
-                                key={key}
-                                className="flex items-center gap-3"
-                              >
-                                <div className="relative h-8 w-8 flex-shrink-0">
-                                  <div
-                                    className="absolute inset-0 rounded-lg border border-border/30"
-                                    style={{ backgroundColor: color }}
-                                  />
-                                  <input
-                                    type="color"
-                                    value={color}
-                                    onChange={(e) =>
-                                      setStatusColor(e.target.value)
-                                    }
-                                    className="absolute inset-0 opacity-0 cursor-pointer"
-                                  />
-                                </div>
-                                <span className="text-sm capitalize text-foreground">
-                                  {key}
-                                </span>
-                                <input
-                                  type="text"
-                                  value={color.toUpperCase()}
-                                  onChange={handleHexChange(
-                                    setStatusColor,
-                                    color,
-                                  )}
-                                  onPaste={handleHexPaste(setStatusColor)}
-                                  className="ml-auto w-28 rounded-md border border-border bg-background px-2 py-1 font-mono text-xs text-foreground"
-                                />
-                              </div>
-                            );
-                          },
-                        )}
-                      </div>
-                    </div>
-                    {/* Алгоритм генерации */}
-                    <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
-                      <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                        Алгоритм генерации
-                      </h2>
-                      <Select
-                        value={algorithm}
-                        onValueChange={(value: AlgorithmType) =>
-                          setAlgorithm(value)
-                        }
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Выберите алгоритм" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="default">✨ Default</SelectItem>
-                          <SelectItem value="monochromatic">
-                            Monochromatic
-                          </SelectItem>
-                          <SelectItem value="saturation">
-                            Saturation Scale
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <div className="mt-2 text-xs text-muted-foreground">
-                        {algorithm === "default" &&
-                          "Default → эталонные токены"}
-                        {algorithm === "monochromatic" &&
-                          "Monochromatic → приглушает цвет, делает его мягче и пастельнее"}
-                        {algorithm === "saturation" &&
-                          "Saturation Scale → усиливает цвет, делает его ярче и насыщеннее"}
-                      </div>
-                    </div>
-
-                    {/* Ручная коррекция только тех токенов, которые попадают в экспортируемый JSON */}
-                    {tokens && (
-                      <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
-                        <TokenEditor
-                          tokens={flattenTokens(tokens).filter((t) => {
-                            return (
-                              t.path === "background.globe" ||
-                              t.path === "background.island" ||
-                              t.path === "background.island-inner" ||
-                              t.path === "background.accent" ||
-                              t.path === "background.border" ||
-                              t.path === "background.modal" ||
-                              t.path === "background.island-shadow" ||
-                              t.path.startsWith("text.") ||
-                              t.path.startsWith("icons.") ||
-                              t.path.startsWith("status.") ||
-                              t.path.startsWith("buttons.")
-                            );
-                          })}
-                          onTokenChange={handleTokenChange}
-                        />
-                      </div>
-                    )}
-                  </div>
-                  {/* Правая панель — контент */}
-                  <div className="min-w-0 flex-1">
-                    <div className="space-y-6">
-                      {/* Превью токенов */}
-                      <div className="rounded-xl border border-border bg-background p-6 shadow-sm">
-                        <TokenPreview tokens={tokens} onReset={handleResetColors} />
+                    <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
+                      <div className="mb-4 flex items-center justify-between">
+                        <h2 className="text-lg font-semibold text-foreground">
+                          Кастомизация атрибутов бренда
+                        </h2>
+                        <button
+                          onClick={handleResetAttributes}
+                          className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                        >
+                          <RotateCcw size={14} />
+                          Сбросить атрибуты
+                        </button>
                       </div>
 
-                      {/* НОВАЯ ПЛАШКА С АТРИБУТАМИ */}
-                      <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
-                        <div className="flex flex-col gap-4 md:flex-row items-stretch">
-                          {/* Левая колонка: карточки атрибутов вертикально (растягиваются) */}
-                          <div className="md:w-1/2 flex flex-col gap-4">
-                            <div className="flex-1">
-                              <AvatarCard
-                                tokens={tokens}
-                                fileData={avatarData}
-                                onUpload={handleFileUpload}
-                                onRemove={() => setAvatarData(undefined)}
-                              />
-                            </div>
-                            <div className="flex-1">
-                              <CurrencyIconCard
-                                tokens={tokens}
-                                fileData={currencyIconData}
-                                onUpload={handleFileUpload}
-                                onRemove={() => setCurrencyIconData(undefined)}
-                              />
-                            </div>
-                            <div className="flex-1">
-                              <ThanksIconCard
-                                tokens={tokens}
-                                fileData={thanksData}
-                                onUpload={handleFileUpload}
-                                onRemove={() => setThanksData(undefined)}
-                              />
-                            </div>
-                            <div className="flex-1">
-                              <ThanksLeaderIconCard
-                                tokens={tokens}
-                                fileData={thanksLeaderData}
-                                onUpload={handleFileUpload}
-                                onRemove={() => setThanksLeaderData(undefined)}
-                              />
-                            </div>
-                          </div>
-
-                          {/* Правая колонка: логотип и мобильный баннер */}
-                          <div className="md:w-1/2 flex flex-col gap-4">
-                            <LogoCard
+                      <div className="flex flex-col gap-4 md:flex-row md:items-stretch">
+                        <div className="flex flex-1 flex-col gap-4">
+                          <div className="flex-1">
+                            <AvatarCard
                               tokens={tokens}
-                              fileData={logoData}
+                              fileData={avatarData}
                               onUpload={handleFileUpload}
-                              onRemove={() => setLogoData(undefined)}
+                              onRemove={() => setAvatarData(undefined)}
                             />
+                          </div>
+                          <div className="flex-1">
+                            <CurrencyIconCard
+                              tokens={tokens}
+                              fileData={currencyIconData}
+                              onUpload={handleFileUpload}
+                              onRemove={() => setCurrencyIconData(undefined)}
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <ThanksIconCard
+                              tokens={tokens}
+                              fileData={thanksData}
+                              onUpload={handleFileUpload}
+                              onRemove={() => setThanksData(undefined)}
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <ThanksLeaderIconCard
+                              tokens={tokens}
+                              fileData={thanksLeaderData}
+                              onUpload={handleFileUpload}
+                              onRemove={() => setThanksLeaderData(undefined)}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-1 flex-col gap-4">
+                          <LogoCard
+                            tokens={tokens}
+                            fileData={logoData}
+                            onUpload={handleFileUpload}
+                            onRemove={() => setLogoData(undefined)}
+                          />
+                          <div className="flex-1">
                             <MobileBannerSection
                               tokens={tokens}
                               fileData={bannerMobileData ?? undefined}
                               currencyName={currencyName}
+                              currencyIconData={currencyIconData}
                               onUpload={(key, file) =>
                                 handleFileUpload("bannerMobile", file)
                               }
@@ -1181,25 +1032,193 @@ const Index = () => {
                             />
                           </div>
                         </div>
-
-                        {/* Кнопка сброса атрибутов внизу плашки */}
-                        <div className="mt-4 flex justify-end">
-                          <button
-                            onClick={handleResetAttributes}
-                            className="flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-                          >
-                            <RotateCcw size={16} />
-                            Сбросить атрибуты
-                          </button>
-                        </div>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Правая панель — управление */}
+                  <div className="w-full space-y-6 lg:w-80 lg:shrink-0">
+                    <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
+                        <h2 className="mb-4 text-base font-semibold text-foreground">
+                          Primary цвет
+                        </h2>
+                        <div className="flex items-center gap-3">
+                          <div className="relative h-8 w-8 flex-shrink-0">
+                            <div
+                              className="absolute inset-0 rounded-lg border border-border/50"
+                              style={{ backgroundColor: primaryColor }}
+                            />
+                            <input
+                              type="color"
+                              value={primaryColor}
+                              onChange={(e) => setPrimaryColor(e.target.value)}
+                              className="absolute inset-0 opacity-0 cursor-pointer"
+                            />
+                          </div>
+                          <input
+                            type="text"
+                            value={primaryColor.toUpperCase()}
+                            onChange={handleHexChange(
+                              setPrimaryColor,
+                              primaryColor,
+                            )}
+                            onPaste={handleHexPaste(setPrimaryColor)}
+                            className="h-8 w-full rounded-lg border border-border bg-background px-3 py-0 font-mono text-sm text-foreground"
+                            placeholder="#009B65"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
+                        <h2 className="mb-4 text-base font-semibold text-foreground">
+                          Цвет текста (text.primary)
+                        </h2>
+                        <div className="flex items-center gap-3">
+                          <div className="relative h-8 w-8 flex-shrink-0">
+                            <div
+                              className="absolute inset-0 rounded-lg border border-border/50"
+                              style={{ backgroundColor: textPrimaryColor }}
+                            />
+                            <input
+                              type="color"
+                              value={textPrimaryColor}
+                              onChange={(e) =>
+                                setTextPrimaryColor(e.target.value)
+                              }
+                              className="absolute inset-0 opacity-0 cursor-pointer"
+                            />
+                          </div>
+                          <input
+                            type="text"
+                            value={textPrimaryColor.toUpperCase()}
+                            onChange={handleHexChange(
+                              setTextPrimaryColor,
+                              textPrimaryColor,
+                            )}
+                            onPaste={handleHexPaste(setTextPrimaryColor)}
+                            className="h-8 w-full rounded-lg border border-border bg-background px-3 py-0 font-mono text-sm text-foreground"
+                            placeholder="#14140F"
+                          />
+                        </div>
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          От него строятся вторичный/третичный текст, граница,
+                          модальное окно и инверсные цвета.
+                        </p>
+                      </div>
+
+                      <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
+                        <h2 className="mb-4 text-base font-semibold text-foreground">
+                          Статусные цвета
+                        </h2>
+                        <div className="space-y-3">
+                          {(["warning", "danger", "success"] as const).map(
+                            (key) => {
+                              const setStatusColor = (value: string) =>
+                                setStatusColors((prev) => ({
+                                  ...prev,
+                                  [key]: value,
+                                }));
+                              const color = statusColors[key];
+                              return (
+                                <div
+                                  key={key}
+                                  className="flex items-center gap-3"
+                                >
+                                  <div className="relative h-8 w-8 flex-shrink-0">
+                                    <div
+                                      className="absolute inset-0 rounded-lg border border-border/30"
+                                      style={{ backgroundColor: color }}
+                                    />
+                                    <input
+                                      type="color"
+                                      value={color}
+                                      onChange={(e) =>
+                                        setStatusColor(e.target.value)
+                                      }
+                                      className="absolute inset-0 opacity-0 cursor-pointer"
+                                    />
+                                  </div>
+                                  <span className="text-sm capitalize text-foreground">
+                                    {key}
+                                  </span>
+                                  <input
+                                    type="text"
+                                    value={color.toUpperCase()}
+                                    onChange={handleHexChange(
+                                      setStatusColor,
+                                      color,
+                                    )}
+                                    onPaste={handleHexPaste(setStatusColor)}
+                                    className="ml-auto w-28 rounded-md border border-border bg-background px-2 py-1 font-mono text-xs text-foreground"
+                                  />
+                                </div>
+                              );
+                            },
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
+                        <h2 className="mb-4 text-base font-semibold text-foreground">
+                          Алгоритм генерации
+                        </h2>
+                        <Select
+                          value={algorithm}
+                          onValueChange={(value: AlgorithmType) =>
+                            setAlgorithm(value)
+                          }
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Выберите алгоритм" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="default">✨ Default</SelectItem>
+                            <SelectItem value="monochromatic">
+                              Monochromatic
+                            </SelectItem>
+                            <SelectItem value="saturation">
+                              Saturation Scale
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          {algorithm === "default" &&
+                            "Default → эталонные токены"}
+                          {algorithm === "monochromatic" &&
+                            "Monochromatic → приглушает цвет, делает его мягче и пастельнее"}
+                          {algorithm === "saturation" &&
+                            "Saturation Scale → усиливает цвет, делает его ярче и насыщеннее"}
+                        </div>
+                      </div>
+
+                      {tokens && (
+                        <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
+                          <TokenEditor
+                            tokens={flattenTokens(tokens).filter((t) => {
+                              return (
+                                t.path === "background.globe" ||
+                                t.path === "background.island" ||
+                                t.path === "background.island-inner" ||
+                                t.path === "background.accent" ||
+                                t.path === "background.border" ||
+                                t.path === "background.modal" ||
+                                t.path === "background.island-shadow" ||
+                                t.path.startsWith("text.") ||
+                                t.path.startsWith("icons.") ||
+                                t.path.startsWith("status.") ||
+                                t.path.startsWith("buttons.")
+                              );
+                            })}
+                            onTokenChange={handleTokenChange}
+                          />
+                        </div>
+                      )}
                   </div>
                 </div>
               </div>
             </TabsContent>
 
-            <TabsContent value="preview" className="mt-6">
+            <TabsContent value="preview" className="mt-6 rounded-lg bg-background p-4">
               <div className="rounded-xl border border-border bg-background p-6 shadow-sm">
                 <Suspense fallback={<div className="text-sm text-muted-foreground">Загрузка превью...</div>}>
                   <PlatformPreview
