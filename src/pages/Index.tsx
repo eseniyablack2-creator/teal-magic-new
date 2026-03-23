@@ -1218,7 +1218,7 @@ const Index = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="preview" className="mt-6 rounded-lg bg-background p-4">
+            <TabsContent value="preview" className="mt-6">
               <div className="rounded-xl border border-border bg-background p-6 shadow-sm">
                 <Suspense fallback={<div className="text-sm text-muted-foreground">Загрузка превью...</div>}>
                   <PlatformPreview

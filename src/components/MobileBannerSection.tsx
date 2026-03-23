@@ -1122,7 +1122,7 @@ const MobileCustomizableBanner = ({
         borderColor: getColor(bg.border),
       }}
     >
-      <div className="flex flex-1 flex-col justify-center p-3">
+      <div className="flex flex-1 flex-col justify-center p-4">
         <h1
           className="text-xl font-extrabold leading-6"
           style={{ color: getColor(txt.primary) }}

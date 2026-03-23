@@ -105,10 +105,17 @@ export default function TokenPreview({ tokens, onReset }: Props) {
         color: getColor(btn.outline[key as keyof typeof btn.outline]),
       };
     }
-    return {
+    const inverseStyle: React.CSSProperties = {
       background: getColor(btn.inverse.fill),
       color: getColor(btn.inverse[key as keyof typeof btn.inverse]),
+      borderStyle: "solid",
+      borderWidth: "1px",
+      borderColor: "transparent",
     };
+    if (state === "hover") {
+      inverseStyle.borderColor = getColor(btn.outline["border-text-default"]);
+    }
+    return inverseStyle;
   };
 
   return (
@@ -177,7 +184,7 @@ export default function TokenPreview({ tokens, onReset }: Props) {
             <button className="h-9 min-w-[80px] rounded-md px-4 text-sm font-medium" style={{ background: getColor(btn.inverse.fill), color: getColor(btn.inverse["text-active"]) }}>Active</button>
             <button className="h-9 min-w-[80px] rounded-md px-4 text-sm font-medium opacity-50" style={{ background: getColor(btn.inverse.fill), color: getColor(btn.inverse["text-disabled"]) }}>Disabled</button>
             <div className="ml-4 flex items-center gap-2 border-l border-border pl-4">
-              <button className="h-9 min-w-[120px] rounded-md px-4 text-sm font-medium transition-colors" style={getButtonStyle("inverse")} onMouseEnter={() => setButtonStates((prev) => ({ ...prev, inverse: "hover" }))} onMouseLeave={() => setButtonStates((prev) => ({ ...prev, inverse: "default" }))} onMouseDown={() => setButtonStates((prev) => ({ ...prev, inverse: "active" }))} onMouseUp={() => setButtonStates((prev) => ({ ...prev, inverse: "hover" }))}>Интерактивный пример кнопки</button>
+              <button className="h-9 min-w-[120px] rounded-md border px-4 text-sm font-medium transition-colors" style={getButtonStyle("inverse")} onMouseEnter={() => setButtonStates((prev) => ({ ...prev, inverse: "hover" }))} onMouseLeave={() => setButtonStates((prev) => ({ ...prev, inverse: "default" }))} onMouseDown={() => setButtonStates((prev) => ({ ...prev, inverse: "active" }))} onMouseUp={() => setButtonStates((prev) => ({ ...prev, inverse: "hover" }))}>Интерактивный пример кнопки</button>
               <span className="min-w-[90px] text-xs text-muted-foreground">{buttonStates.inverse === "default" ? "По умолчанию" : buttonStates.inverse === "hover" ? "При наведении" : "При нажатии"}</span>
             </div>
           </div>
