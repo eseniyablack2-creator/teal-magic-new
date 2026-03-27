@@ -736,8 +736,23 @@ const Index = () => {
             const minWidth = Math.floor(asset.pngWidth * 0.6);
             const minHeight = Math.floor(asset.pngHeight * 0.6);
 
+            let sourceForResize = blob;
+            if (ext === "svg+xml" || ext === "svg") {
+              // Для SVG сначала явно рендерим в PNG нужного размера,
+              // затем применяем ограничение по весу.
+              const base64 = dataUrl.split(",")[1];
+              if (base64) {
+                const svgString = atob(base64);
+                sourceForResize = await renderSvgToPng(
+                  svgString,
+                  asset.pngWidth,
+                  asset.pngHeight,
+                );
+              }
+            }
+
             const pngBlob = await ensurePngUnderLimit(
-              blob,
+              sourceForResize,
               asset.pngWidth,
               asset.pngHeight,
               minWidth,

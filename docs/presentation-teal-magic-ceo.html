@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teal Magic - CEO Presentation</title>
+    <style>
+      :root {
+        --bg: #f3f6f8;
+        --card: #ffffff;
+        --ink: #111827;
+        --muted: #4b5563;
+        --brand: #009b65;
+        --brand-soft: #e7f6f1;
+        --line: #dbe3ea;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+      }
+      .deck {
+        display: grid;
+        gap: 16px;
+        padding: 16px;
+      }
+      .slide {
+        width: 297mm;
+        height: 210mm;
+        margin: 0 auto;
+        background: linear-gradient(165deg, #ffffff 0%, #f8fbfd 100%);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 18mm 16mm;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        box-shadow: 0 8px 28px rgba(17, 24, 39, 0.08);
+        page-break-after: always;
+      }
+      .slide:last-child { page-break-after: auto; }
+      .kicker {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        background: var(--brand-soft);
+        color: #0f766e;
+        letter-spacing: 0.2px;
+      }
+      h1 {
+        margin: 10px 0 8px;
+        font-size: 34px;
+        line-height: 1.15;
+      }
+      h2 {
+        margin: 10px 0 6px;
+        font-size: 28px;
+        line-height: 1.2;
+      }
+      p.lead {
+        margin: 0;
+        font-size: 18px;
+        line-height: 1.45;
+        color: #1f2937;
+        max-width: 88%;
+      }
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        align-content: start;
+      }
+      .grid-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+        align-content: start;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px;
+      }
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 18px;
+      }
+      .card p, .card li {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.45;
+        color: var(--muted);
+      }
+      .card ul {
+        margin: 0;
+        padding-left: 18px;
+        display: grid;
+        gap: 6px;
+      }
+      .accent {
+        border-color: #bfe8d8;
+        background: #f2fbf7;
+      }
+      .metric {
+        font-size: 28px;
+        line-height: 1;
+        font-weight: 800;
+        color: var(--brand);
+        margin-bottom: 6px;
+      }
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        color: #6b7280;
+      }
+      .bar {
+        width: 120px;
+        height: 6px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #009b65, #6ee7b7);
+      }
+      .timeline {
+        display: grid;
+        gap: 8px;
+      }
+      .step {
+        display: grid;
+        grid-template-columns: 34px 1fr;
+        gap: 10px;
+        align-items: start;
+      }
+      .num {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        background: #e6f7f1;
+        color: #0f766e;
+      }
+      .compare {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .big {
+        font-size: 20px;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 6px;
+      }
+      @media print {
+        body { background: white; }
+        .deck { padding: 0; gap: 0; }
+        .slide {
+          width: 297mm;
+          height: 210mm;
+          margin: 0;
+          border-radius: 0;
+          border: none;
+          box-shadow: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="deck">
+      <section class="slide">
+        <header>
+          <span class="kicker">Внутренний инструмент Teal Magic</span>
+          <h1>Почему я пришла к решению создать этот инструмент</h1>
+          <p class="lead">
+            Я видела, что каждое брендирование клиента занимало много ручной работы:
+            одни и те же правки цветов, логотипов и баннеров повторялись по всем шаблонам.
+            Ошибки росли вместе с количеством страниц, а скорость запуска проседала.
+          </p>
+        </header>
+        <div class="grid-2">
+          <article class="card">
+            <h3>Проблема до инструмента</h3>
+            <ul>
+              <li>Массовые правки делались вручную в каждом шаблоне.</li>
+              <li>Один пропущенный экран ломал целостность бренда.</li>
+              <li>Маркетинг и дизайн ждали разработку даже для простых задач.</li>
+            </ul>
+          </article>
+          <article class="card accent">
+            <h3>Какую задачу я ставила</h3>
+            <p>
+              Я поставила цель дать команде понятный конструктор: ввести брендовые параметры
+              один раз, сразу увидеть результат во всех ключевых экранах и выгрузить готовый
+              пакет для внедрения без лишней переписки.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Что это меняет для бизнеса</h3>
+            <ul>
+              <li>Быстрее запуск новых клиентов и кампаний.</li>
+              <li>Меньше операционного риска и переделок.</li>
+              <li>Предсказуемое качество брендирования на масштабе.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>Почему важно масштабировать</h3>
+            <p>
+              Когда шаблонов становится больше, ручной путь дорожает нелинейно.
+              Инструмент делает процесс повторяемым: рост объема больше не равен росту хаоса.
+            </p>
+          </article>
+        </div>
+        <footer class="footer">
+          <span>Слайд 1/4</span>
+          <span class="bar"></span>
+        </footer>
+      </section>
+
+      <section class="slide">
+        <header>
+          <span class="kicker">Путь создания</span>
+          <h2>Как мы создавали инструмент (коротко, по шагам)</h2>
+        </header>
+        <div class="grid-2">
+          <article class="card">
+            <div class="timeline">
+              <div class="step">
+                <div class="num">1</div>
+                <div>
+                  <div class="big">Собрала реальные боли</div>
+                  <p>Зафиксировала, где команда теряет время: повторные правки, ожидание согласований, расхождения по экранам.</p>
+                </div>
+              </div>
+              <div class="step">
+                <div class="num">2</div>
+                <div>
+                  <div class="big">Сделала единый сценарий</div>
+                  <p>Определила простой поток: выбрать цвета, загрузить атрибуты бренда, проверить превью, выгрузить архив.</p>
+                </div>
+              </div>
+              <div class="step">
+                <div class="num">3</div>
+                <div>
+                  <div class="big">Добилась предсказуемого результата</div>
+                  <p>Настроила формат выгрузки так, чтобы поддержка и разработка получали единый и аккуратный пакет данных.</p>
+                </div>
+              </div>
+            </div>
+          </article>
+          <article class="card accent">
+            <h3>Что дает конструктор предметно</h3>
+            <ul>
+              <li>Один ввод бренда -> сразу все ключевые страницы превью.</li>
+              <li>Меньше ручных операций и меньше риска человеческой ошибки.</li>
+              <li>Единая выгрузка для команды внедрения без догадок.</li>
+              <li>Быстрый цикл "идея -> проверка -> готовый результат".</li>
+            </ul>
+          </article>
+          <article class="card" style="grid-column: 1 / span 2;">
+            <h3>Эффект по ролям (человечески)</h3>
+            <div class="grid-3">
+              <div>
+                <div class="big">Маркетинг</div>
+                <p>Больше не "ждет окно" у разработки. Может быстро проверять визуальные гипотезы и запускать коммуникации вовремя.</p>
+              </div>
+              <div>
+                <div class="big">Дизайн</div>
+                <p>Видит целостную картину бренда сразу на нескольких экранах и не тратит энергию на рутину правок.</p>
+              </div>
+              <div>
+                <div class="big">Разработка/продакт</div>
+                <p>Получают чистый, повторяемый вход. Меньше уточнений, меньше "а это точно финал?" и меньше перезапусков задач.</p>
+              </div>
+            </div>
+          </article>
+        </div>
+        <footer class="footer">
+          <span>Слайд 2/4</span>
+          <span class="bar"></span>
+        </footer>
+      </section>
+
+      <section class="slide">
+        <header>
+          <span class="kicker">Экономика решения</span>
+          <h2>Реальный сценарий: массовая правка цвета и логотипа</h2>
+          <p class="lead">
+            Если меняются брендовый цвет и логотип, ручной путь требует пройти каждый шаблон отдельно.
+            С инструментом я делаю это один раз и сразу вижу итог в едином превью.
+          </p>
+        </header>
+        <div class="compare">
+          <article class="card">
+            <h3>Без инструмента (ручной путь)</h3>
+            <ul>
+              <li>Правки по каждому шаблону и состоянию отдельно.</li>
+              <li>Проверка "ничего ли не пропустили" вручную.</li>
+              <li>Повторные итерации из-за мелких расхождений.</li>
+            </ul>
+            <div style="margin-top: 10px;" class="metric">Цена растет с каждым новым шаблоном</div>
+            <p>Чем больше экранов, тем выше стоимость и дольше время реакции.</p>
+          </article>
+          <article class="card accent">
+            <h3>С инструментом (конструктор)</h3>
+            <ul>
+              <li>Один ввод параметров бренда для всех шаблонов сразу.</li>
+              <li>Мгновенная визуальная проверка в одном месте.</li>
+              <li>Одна выгрузка готового пакета для внедрения.</li>
+            </ul>
+            <div style="margin-top: 10px;" class="metric">Время сокращается в разы</div>
+            <p>На росте количества шаблонов эффект становится еще заметнее.</p>
+          </article>
+        </div>
+        <div class="grid-3" style="margin-top: 12px;">
+          <article class="card">
+            <div class="metric">- меньше риска</div>
+            <p>Снижается вероятность пропустить экран или стиль.</p>
+          </article>
+          <article class="card">
+            <div class="metric">+ выше скорость</div>
+            <p>Путь от запроса до результата становится короче и стабильнее.</p>
+          </article>
+          <article class="card">
+            <div class="metric">+ прозрачность</div>
+            <p>Руководство видит понятный процесс и прогнозируемый выход.</p>
+          </article>
+        </div>
+        <footer class="footer">
+          <span>Слайд 3/4</span>
+          <span class="bar"></span>
+        </footer>
+      </section>
+
+      <section class="slide">
+        <header>
+          <span class="kicker">Итог для бизнеса</span>
+          <h2>Почему это решение стоит масштабировать</h2>
+        </header>
+        <div class="grid-2">
+          <article class="card accent">
+            <h3>Коротко: что мы уже получили</h3>
+            <ul>
+              <li>Я убрала повторяющуюся ручную работу из критического процесса.</li>
+              <li>Сделала результат брендирования предсказуемым и контролируемым.</li>
+              <li>Сократила число итераций между бизнесом, дизайном и разработкой.</li>
+              <li>Подготовила основу, которая масштабируется вместе с продуктом.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>Метрики эффекта (бизнес-языком)</h3>
+            <div class="grid-2">
+              <div>
+                <div class="metric">быстрее</div>
+                <p>Вывод брендовых изменений в работу команды.</p>
+              </div>
+              <div>
+                <div class="metric">дешевле</div>
+                <p>Меньше ручных часов на типовые массовые правки.</p>
+              </div>
+              <div>
+                <div class="metric">надежнее</div>
+                <p>Меньше ошибок и возвратов на доработку.</p>
+              </div>
+              <div>
+                <div class="metric">понятнее</div>
+                <p>Единый формат результата для всех участников.</p>
+              </div>
+            </div>
+          </article>
+          <article class="card" style="grid-column: 1 / span 2;">
+            <h3>Главная мысль</h3>
+            <p style="font-size: 19px; color: #111827;">
+              Я пришла к этому инструменту не как к "удобной фиче", а как к управленческому рычагу:
+              он прямо снижает стоимость масштабирования брендирования и повышает скорость запуска изменений.
+            </p>
+          </article>
+        </div>
+        <footer class="footer">
+          <span>Слайд 4/4</span>
+          <span class="bar"></span>
+        </footer>
+      </section>
+    </main>
+  </body>
+</html>
