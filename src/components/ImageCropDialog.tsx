@@ -1,6 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Cropper, { Area, MediaSize } from "react-easy-crop";
+import type { Size } from "react-easy-crop";
 import {
+  AlignHorizontalJustifyCenter,
+  AlignHorizontalJustifyEnd,
+  AlignHorizontalJustifyStart,
   AlignVerticalJustifyCenter,
   AlignVerticalJustifyEnd,
   AlignVerticalJustifyStart,
@@ -14,6 +18,57 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+
+/**
+ * Половина «зазора», на который можно сдвинуть картинку вдоль оси (px).
+ * - Если картинка (с zoom) шире/выше рамки кропа — как в restrictPosition: (media×zoom − crop) / 2.
+ * - Если уже рамки (уменьшили масштаб, белые поля) — (crop − media×zoom) / 2, иначе max был бы 0 и сдвига не было бы.
+ */
+function getMaxPanOffset(
+  mediaLength: number,
+  cropLength: number,
+  zoom: number,
+): number {
+  return Math.abs(mediaLength * zoom - cropLength) / 2;
+}
+
+/** Вертикаль: translate Y — вверх отрицательный, вниз положительный (и для overflow, и для letterbox). */
+function getVerticalAlignOffset(
+  pos: "top" | "center" | "bottom",
+  mediaHeight: number,
+  cropHeight: number,
+  zoom: number,
+): number {
+  const max = getMaxPanOffset(mediaHeight, cropHeight, zoom);
+  if (max <= 0) return 0;
+  if (pos === "center") return 0;
+  if (pos === "top") return -max;
+  return max;
+}
+
+/**
+ * Горизонталь: знаки зависят от того, шире ли картинка рамки или уже (letterbox).
+ * Overflow (шире): +x сдвигает вправо → видна левая часть файла → «влево» = +max.
+ * Letterbox (уже): +x уводит картинку вправо по белому полю → «влево» = −max, «вправо» = +max.
+ */
+function getHorizontalAlignOffset(
+  pos: "left" | "center" | "right",
+  mediaWidth: number,
+  cropWidth: number,
+  zoom: number,
+): number {
+  const scaled = mediaWidth * zoom;
+  const max = getMaxPanOffset(mediaWidth, cropWidth, zoom);
+  if (max <= 0) return 0;
+  if (pos === "center") return 0;
+  const overflow = scaled >= cropWidth;
+  if (overflow) {
+    if (pos === "left") return max;
+    return -max;
+  }
+  if (pos === "left") return -max;
+  return max;
+}
 
 const createCroppedImage = async (
   imageSrc: string,
@@ -152,13 +207,42 @@ export const ImageCropDialog: React.FC<ImageCropDialogProps> = ({
     width: number;
     height: number;
   } | null>(null);
+  /** Отрисованные размеры картинки внутри контейнера кропа (как у Cropper.mediaSize) */
+  const [mediaRendered, setMediaRendered] = useState<MediaSize | null>(null);
+  /** Размер рамки кропа — нужен для расчёта предельных смещений */
+  const [cropSize, setCropSize] = useState<Size | null>(null);
 
-  const alignVertical = useCallback((pos: "top" | "center" | "bottom") => {
-    setCrop((prev) => ({
-      ...prev,
-      y: pos === "top" ? -50 : pos === "bottom" ? 50 : 0,
-    }));
-  }, []);
+  const alignVertical = useCallback(
+    (pos: "top" | "center" | "bottom") => {
+      setCrop((prev) => {
+        if (!mediaRendered || !cropSize) return prev;
+        const y = getVerticalAlignOffset(
+          pos,
+          mediaRendered.height,
+          cropSize.height,
+          zoom,
+        );
+        return { ...prev, y };
+      });
+    },
+    [cropSize, mediaRendered, zoom],
+  );
+
+  const alignHorizontal = useCallback(
+    (pos: "left" | "center" | "right") => {
+      setCrop((prev) => {
+        if (!mediaRendered || !cropSize) return prev;
+        const x = getHorizontalAlignOffset(
+          pos,
+          mediaRendered.width,
+          cropSize.width,
+          zoom,
+        );
+        return { ...prev, x };
+      });
+    },
+    [cropSize, mediaRendered, zoom],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -167,6 +251,8 @@ export const ImageCropDialog: React.FC<ImageCropDialogProps> = ({
     setZoomInput("100");
     setCroppedAreaPixels(null);
     setMediaNatural(null);
+    setMediaRendered(null);
+    setCropSize(null);
   }, [open, imageSrc, aspect]);
 
   useEffect(() => {
@@ -246,6 +332,8 @@ export const ImageCropDialog: React.FC<ImageCropDialogProps> = ({
               zoomWithScroll
               zoomSpeed={0.15}
               onMediaLoaded={handleMediaLoaded}
+              setMediaSize={setMediaRendered}
+              onCropSizeChange={setCropSize}
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={handleCropComplete}
@@ -291,6 +379,38 @@ export const ImageCropDialog: React.FC<ImageCropDialogProps> = ({
                   title="Снизу"
                 >
                   <AlignVerticalJustifyEnd size={16} />
+                </Button>
+              </div>
+              <div className="inline-flex items-center rounded-md border border-border bg-background">
+                <Button
+                  variant="ghost"
+                  type="button"
+                  onClick={() => alignHorizontal("left")}
+                  className="h-8 w-8 rounded-none"
+                  aria-label="Выровнять по левому краю"
+                  title="Слева"
+                >
+                  <AlignHorizontalJustifyStart size={16} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  type="button"
+                  onClick={() => alignHorizontal("center")}
+                  className="h-8 w-8 rounded-none border-l border-border"
+                  aria-label="Выровнять по горизонтальному центру"
+                  title="По центру"
+                >
+                  <AlignHorizontalJustifyCenter size={16} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  type="button"
+                  onClick={() => alignHorizontal("right")}
+                  className="h-8 w-8 rounded-none border-l border-border"
+                  aria-label="Выровнять по правому краю"
+                  title="Справа"
+                >
+                  <AlignHorizontalJustifyEnd size={16} />
                 </Button>
               </div>
             </div>
